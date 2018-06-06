@@ -1,23 +1,24 @@
 {
   "name": "react-fiber-worker",
   "devDependencies": {
-    "@storybook/storybook-deployer": "^2.3.0",
-    "worker-loader": "^2.0.0",
     "@storybook/addon-actions": "^3.4.6",
     "@storybook/addon-links": "^3.4.6",
     "@storybook/addons": "^3.4.6",
     "@storybook/react": "^3.4.6",
+    "@storybook/storybook-deployer": "^2.3.0",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
     "react": "16.x",
-    "react-dom": "16.x"
+    "react-dom": "16.x",
+    "worker-loader": "^2.0.0"
   },
   "dependencies": {
+    "@storybook/addon-options": "^3.4.6",
     "create-react-class": "^15.6.3"
   },
   "scripts": {
     "start": "start-storybook -p 6006",
     "build": "build-storybook",
-    "deploy":"storybook-to-ghpages"
+    "deploy": "storybook-to-ghpages"
   }
 }

@@ -4,7 +4,7 @@ import Worker from 'worker-loader!./simple.worker';
 import { render } from '../src/render';
 import ReactDOM from 'react-dom';
 
-const Demo = createClass({
+const Simple = createClass({
   componentDidMount() {
     const worker = new Worker();
     this.root = ReactDOM.findDOMNode(this);
@@ -27,4 +27,4 @@ const Demo = createClass({
   }
 });
 
-export default Demo;
+export default Simple;

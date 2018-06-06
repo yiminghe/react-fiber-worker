@@ -56,3 +56,4 @@ apps/
 /appx/
 .entry/
 .happypack/
+storybook-static/

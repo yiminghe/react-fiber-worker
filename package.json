@@ -11,6 +11,7 @@
     "react-dom": "16.x"
   },
   "dependencies": {
+    "@storybook/addon-options": "^3.4.6",
     "create-react-class": "^15.6.3",
     "worker-loader": "^2.0.0"
   },

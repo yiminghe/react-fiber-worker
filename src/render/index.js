@@ -1,4 +1,3 @@
-import { END_FLAG } from '../shared/constants';
 import { viewRegistry, rootViewRegistry } from './registry';
 import * as dom from './dom';
 
@@ -19,31 +18,14 @@ export function render({ bridge, appKey, rootView, initialProps }) {
   globalRootTag += 10;
   rootViewRegistry[rootTag] = viewRegistry[rootTag] = rootView;
   rootView.__reactRootTag = rootTag;
-
-  function doIt() {
-    if (!bindDOM) {
-      bindDOM = true;
-      bridge.addEventListener('message', onDOMMessage, false);
-    }
-    bridge.postMessage({
-      type: 'mount',
-      appKey,
-      rootTag,
-      initialProps,
-    });
+  if (!bindDOM) {
+    bindDOM = true;
+    bridge.addEventListener('message', onDOMMessage, false);
   }
-
-  function ready(e) {
-    if (e.data === END_FLAG) {
-      readied = true;
-      bridge.removeEventListener('message', ready, false);
-      doIt();
-    }
-  }
-
-  if (readied) {
-    doIt();
-  } else {
-    bridge.addEventListener('message', ready, false);
-  }
+  bridge.postMessage({
+    type: 'mount',
+    appKey,
+    rootTag,
+    initialProps,
+  });
 }

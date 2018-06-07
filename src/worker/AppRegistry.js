@@ -3,7 +3,6 @@
  * @format
  */
 
-import { END_FLAG } from '../shared/constants';
 import invariant from 'fbjs/lib/invariant';
 import renderApplication from './renderApplication';
 
@@ -22,7 +21,6 @@ export default {
         );
       },
     };
-    postMessage(END_FLAG);
     return appKey;
   },
 

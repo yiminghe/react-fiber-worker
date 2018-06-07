@@ -3,7 +3,8 @@ import { viewRegistry, rootViewRegistry } from './registry';
 import * as dom from './dom';
 
 let globalRootTag = 1;
-let readied = false;
+// maybe no need to check worker ready
+let readied = true;
 let bindDOM = false;
 
 function onDOMMessage(event) {

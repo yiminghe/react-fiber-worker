@@ -11,4 +11,17 @@ export const eventTypes = [];
 
 export const customDirectEventTypes = [];
 
-export const customBubblingEventTypes = [];
+export const customBubblingEventTypes = {
+  topTouchStart: {
+    phasedRegistrationNames: {
+      bubbled: 'onTouchStart',
+      captured: 'onTouchStartCapture'
+    }
+  },
+  topClick: {
+    phasedRegistrationNames: {
+      bubbled: 'onClick',
+      captured: 'onClickCapture'
+    }
+  },
+};

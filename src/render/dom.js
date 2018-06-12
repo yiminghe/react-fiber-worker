@@ -17,6 +17,11 @@ export function createView(tag, viewClass, rootTag, props) {
       });
     }
   }
+  // for test
+  if (node.setAttribute) {
+    node.setAttribute('data-reactTag', tag);
+  }
+  node.reactTag = tag;
   viewRegistry[tag] = node;
 }
 

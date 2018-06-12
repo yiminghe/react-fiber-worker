@@ -1,5 +1,6 @@
 import { viewRegistry, rootViewRegistry } from './registry';
 import * as dom from './dom';
+import bindDOMEvent from './bindDOMEvent';
 
 let globalRootTag = 1;
 // maybe no need to check worker ready
@@ -20,6 +21,7 @@ export function render({ bridge, appKey, rootView, initialProps }) {
   rootView.__reactRootTag = rootTag;
   if (!bindDOM) {
     bindDOM = true;
+    bindDOMEvent(bridge);
     bridge.addEventListener('message', onDOMMessage, false);
   }
   bridge.postMessage({

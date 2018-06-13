@@ -1,7 +1,10 @@
 export function get(type) {
   if (type === 'view') {
     return {
-      validAttributes: {},
+      validAttributes: {
+        style:1,
+        className:1,
+      },
       uiViewClassName: type,
     }
   }

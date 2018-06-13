@@ -281,7 +281,7 @@ export function commitTextUpdate(
 ): void {
   UIManager.updateView(
     textInstance, // reactTag
-    'RCTRawText', // viewName
+    'rawText', // viewName
     {text: newText}, // props
   );
 }

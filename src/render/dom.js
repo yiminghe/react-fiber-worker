@@ -108,12 +108,13 @@ export function manageChildren(
 
 function noop() {}
 
-function generateResponseFn(bridge, id) {
-  return id
+function generateResponseFn(bridge, callbackId) {
+  return callbackId
     ? response => {
         bridge.postMessage({
           type: 'callViewMethodResponse',
           response,
+          callbackId,
         });
       }
     : noop;
@@ -136,6 +137,36 @@ export function callViewMethod(
         error,
       });
     }
+  } else {
+    const error = `${reactTag} not found!`;
+    console.error(error);
+    callback({
+      error,
+    });
+  }
+}
+
+export function measure(bridge, { reactTag, callbackId }) {
+  let callback = generateResponseFn(bridge, callbackId);
+  const node = viewRegistry[reactTag];
+  if (node) {
+    const clientRect = node.getBoundingClientRect();
+    const rect = {};
+    // rect.left    // 节点的左边界坐标
+    // rect.right   // 节点的右边界坐标
+    // rect.top     // 节点的上边界坐标
+    // rect.bottom  // 节点的下边界坐标
+    // rect.width   // 节点的宽度
+    // rect.height  // 节点的高度
+    const rectProps = ['left', 'right', 'top', 'bottom', 'width', 'height'];
+    for (let i = 0; i < rectProps.length; i++) {
+      if (clientRect[rectProps[i]] !== undefined) {
+        rect[rectProps[i]] = clientRect[rectProps[i]];
+      }
+    }
+    rect.pageX = window.pageXOffset + rect.left;
+    rect.pageY = window.pageYOffset + rect.top;
+    callback(rect);
   } else {
     const error = `${reactTag} not found!`;
     console.error(error);

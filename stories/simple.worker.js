@@ -1,5 +1,10 @@
 import React from 'react';
-import { AppRegistry, callViewMethod, findNodeHandle } from '../src/worker';
+import {
+  AppRegistry,
+  callViewMethod,
+  findNodeHandle,
+  measure,
+} from '../src/worker';
 import createClass from 'create-react-class';
 
 const Simple = createClass({
@@ -11,21 +16,27 @@ const Simple = createClass({
   onTouchStart(e) {
     console.log('receive onTouchStart', e.nativeEvent, e.currentTarget);
   },
+  focus() {
+    callViewMethod(this.inputHandle, {
+      method: 'focus',
+    });
+  },
+  measure() {
+    measure(this.inputHandle, rect => {
+      console.log('input rect', rect);
+    });
+  },
   onInnerClick(e) {
     this.onClick(e);
     this.setState({
       workerTime: new Date().toString(),
-    });
-    callViewMethod({
-      reactTag: this.inputReactTag,
-      method: 'focus',
     });
   },
   onClick(e) {
     console.log('receive onClick', e.nativeEvent, e.currentTarget);
   },
   saveInput(input) {
-    this.inputReactTag = findNodeHandle(input);
+    this.inputHandle = findNodeHandle(input);
   },
   render() {
     const views = [];
@@ -58,15 +69,17 @@ const Simple = createClass({
       styleObj.style = style;
     }
     return (
-      <view onClick={this.onClick}>
-        <view
-          {...styleObj}
-          onTouchStart={this.onTouchStart}
-          onClick={this.onInnerClick}
-        >
-          click me
+      <view
+        {...styleObj}
+        onClick={this.onClick}
+        onTouchStart={this.onTouchStart}
+      >
+        <button onClick={this.onInnerClick}>rerender</button>
+        <button onClick={this.focus}>focus</button>
+        <button onClick={this.measure}>measure</button>
+        <view>
+          <input ref={this.saveInput} />
         </view>
-        <input ref={this.saveInput} />
         <view>{views}</view>
       </view>
     );

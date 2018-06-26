@@ -31,7 +31,7 @@ self.onmessage = function(event) {
 const callPool = {};
 let id = 0;
 
-export function callViewMethod({ reactTag, method, args, callback }) {
+export function callViewMethod(reactTag, { method, args }, callback) {
   if (callback) {
     callPool[++id] = callback;
   }
@@ -42,6 +42,21 @@ export function callViewMethod({ reactTag, method, args, callback }) {
         reactTag,
         method,
         args,
+        callbackId: callback ? id : undefined,
+      },
+    ],
+  });
+}
+
+export function measure(reactTag, callback) {
+  if (callback) {
+    callPool[++id] = callback;
+  }
+  postMessage({
+    type: 'measure',
+    args: [
+      {
+        reactTag,
         callbackId: callback ? id : undefined,
       },
     ],

@@ -1,5 +1,6 @@
 const map = {
   view: 1,
+  button: 1,
   input: 1,
 };
 

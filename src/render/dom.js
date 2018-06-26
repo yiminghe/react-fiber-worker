@@ -1,12 +1,12 @@
-import { viewRegistry } from "./registry";
+import { viewRegistry } from './registry';
 
 const tagMap = {
-  view: "div",
-  text: "span"
+  view: 'div',
+  text: 'span',
 };
 
 function toStyleString(o) {
-  let s = "";
+  let s = '';
   Object.keys(o).forEach(k_ => {
     const k = k_.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
     s += `${k}:${o[k_]};`;
@@ -14,12 +14,12 @@ function toStyleString(o) {
   return s;
 }
 
-export function createView(tag, viewClass, rootTag, props) {
+export function createView(bridge, tag, viewClass, rootTag, props) {
   let node;
-  if (viewClass === "rawText") {
+  if (viewClass === 'rawText') {
     node = document.createTextNode(props.text);
   } else {
-    node = document.createElement(tagMap[viewClass] || "div");
+    node = document.createElement(tagMap[viewClass] || viewClass);
     if (props) {
       Object.keys(props).forEach(k => {
         let value = props[k];
@@ -27,7 +27,7 @@ export function createView(tag, viewClass, rootTag, props) {
           node.removeAttribute(k);
           return;
         }
-        if (k === "style") {
+        if (k === 'style') {
           value = toStyleString(value);
         }
         node.setAttribute(k, value);
@@ -36,13 +36,13 @@ export function createView(tag, viewClass, rootTag, props) {
   }
   // for test
   if (node.setAttribute) {
-    node.setAttribute("data-reactTag", tag);
+    node.setAttribute('data-reactTag', tag);
   }
   node.reactTag = tag;
   viewRegistry[tag] = node;
 }
 
-export function setChildren(parentTag, tags) {
+export function setChildren(bridge, parentTag, tags) {
   const parent = viewRegistry[parentTag];
   const children = tags.map(t => viewRegistry[t]);
   children.forEach(c => {
@@ -50,9 +50,9 @@ export function setChildren(parentTag, tags) {
   });
 }
 
-export function updateView(tag, viewClass, props) {
+export function updateView(bridge, tag, viewClass, props) {
   let node = viewRegistry[tag];
-  if (viewClass === "rawText") {
+  if (viewClass === 'rawText') {
     node.nodeValue = props.text;
   } else {
     if (props) {
@@ -62,7 +62,7 @@ export function updateView(tag, viewClass, props) {
           node.removeAttribute(k);
           return;
         }
-        if (k === "style") {
+        if (k === 'style') {
           value = toStyleString(value);
         }
         node.setAttribute(k, value);
@@ -72,12 +72,13 @@ export function updateView(tag, viewClass, props) {
 }
 
 export function manageChildren(
+  bridge,
   containerTag,
   moveFromIndices,
   moveToIndices,
   addChildReactTags,
   addAtIndices,
-  removeAtIndices
+  removeAtIndices,
 ) {
   const container = viewRegistry[containerTag];
   const childNodes = container.childNodes;
@@ -102,5 +103,44 @@ export function manageChildren(
     if (removeNode) {
       container.removeChild(removeNode);
     }
+  }
+}
+
+function noop() {}
+
+function generateResponseFn(bridge, id) {
+  return id
+    ? response => {
+        bridge.postMessage({
+          type: 'callViewMethodResponse',
+          response,
+        });
+      }
+    : noop;
+}
+
+export function callViewMethod(
+  bridge,
+  { reactTag, method, args = [], callbackId },
+) {
+  let callback = generateResponseFn(bridge, callbackId);
+  const newArgs = [callback, ...args];
+  const node = viewRegistry[reactTag];
+  if (node) {
+    if (node[method]) {
+      node[method](...newArgs);
+    } else {
+      const error = `${reactTag}:${method} not found!`;
+      console.error(error);
+      callback({
+        error,
+      });
+    }
+  } else {
+    const error = `${reactTag} not found!`;
+    console.error(error);
+    callback({
+      error,
+    });
   }
 }

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import React from "react";
+import React from 'react';
 
 export type MeasureOnSuccessCallback = (
   x: number,
@@ -16,32 +16,32 @@ export type MeasureOnSuccessCallback = (
   width: number,
   height: number,
   pageX: number,
-  pageY: number
+  pageY: number,
 ) => void;
 
 export type MeasureInWindowOnSuccessCallback = (
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
 ) => void;
 
 export type MeasureLayoutOnSuccessCallback = (
   left: number,
   top: number,
   width: number,
-  height: number
+  height: number,
 ) => void;
 
 type BubblingEventType = {
   phasedRegistrationNames: {
     captured: string,
-    bubbled: string
-  }
+    bubbled: string,
+  },
 };
 
 type DirectEventType = {
-  registrationName: string
+  registrationName: string,
 };
 
 export type ReactNativeBaseComponentViewConfig = {
@@ -49,7 +49,7 @@ export type ReactNativeBaseComponentViewConfig = {
   uiViewClassName: string,
   bubblingEventTypes?: { [topLevelType: string]: BubblingEventType },
   directEventTypes?: { [topLevelType: string]: DirectEventType },
-  propTypes?: Object
+  propTypes?: Object,
 };
 
 export type ViewConfigGetter = () => ReactNativeBaseComponentViewConfig;
@@ -65,7 +65,7 @@ class ReactNativeComponent<Props> extends React.Component<Props> {
   measureLayout(
     relativeToNativeNode: number,
     onSuccess: MeasureLayoutOnSuccessCallback,
-    onFail?: () => void
+    onFail?: () => void,
   ): void {}
   setNativeProps(nativeProps: Object): void {}
 }
@@ -82,20 +82,20 @@ export type NativeMethodsMixinType = {
   measureLayout(
     relativeToNativeNode: number,
     onSuccess: MeasureLayoutOnSuccessCallback,
-    onFail: () => void
+    onFail: () => void,
   ): void,
-  setNativeProps(nativeProps: Object): void
+  setNativeProps(nativeProps: Object): void,
 };
 
 type SecretInternalsType = {
   NativeMethodsMixin: NativeMethodsMixinType,
-  computeComponentStackForErrorReporting(tag: number): string
+  computeComponentStackForErrorReporting(tag: number): string,
   // TODO (bvaughn) Decide which additional types to expose here?
   // And how much information to fill in for the above types.
 };
 
 type SecretInternalsFabricType = {
-  NativeMethodsMixin: NativeMethodsMixinType
+  NativeMethodsMixin: NativeMethodsMixinType,
 };
 
 /**
@@ -108,13 +108,13 @@ export type ReactNativeType = {
   render(
     element: React$Element<any>,
     containerTag: any,
-    callback: ?Function
+    callback: ?Function,
   ): any,
   unmountComponentAtNode(containerTag: number): any,
   unmountComponentAtNodeAndRemoveContainer(containerTag: number): any,
   unstable_batchedUpdates: any, // TODO (bvaughn) Add types
 
-  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsType
+  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsType,
 };
 
 export type ReactFabricType = {
@@ -123,9 +123,9 @@ export type ReactFabricType = {
   render(
     element: React$Element<any>,
     containerTag: any,
-    callback: ?Function
+    callback: ?Function,
   ): any,
   unmountComponentAtNode(containerTag: number): any,
 
-  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsFabricType
+  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsFabricType,
 };

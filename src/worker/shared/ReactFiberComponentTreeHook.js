@@ -7,16 +7,16 @@
  * @flow
  */
 
-import type { Fiber } from "react-reconciler/src/ReactFiber";
+import type { Fiber } from 'react-reconciler/src/ReactFiber';
 
 import {
   IndeterminateComponent,
   FunctionalComponent,
   ClassComponent,
-  HostComponent
-} from "./ReactTypeOfWork";
-import describeComponentFrame from "./describeComponentFrame";
-import getComponentName from "./getComponentName";
+  HostComponent,
+} from './ReactTypeOfWork';
+import describeComponentFrame from './describeComponentFrame';
+import getComponentName from './getComponentName';
 
 function describeFiber(fiber: Fiber): string {
   switch (fiber.tag) {
@@ -33,7 +33,7 @@ function describeFiber(fiber: Fiber): string {
       }
       return describeComponentFrame(name, source, ownerName);
     default:
-      return "";
+      return '';
   }
 }
 
@@ -41,9 +41,9 @@ function describeFiber(fiber: Fiber): string {
 // only during begin or complete phase. Do not call it under any other
 // circumstances.
 export function getStackAddendumByWorkInProgressFiber(
-  workInProgress: Fiber
+  workInProgress: Fiber,
 ): string {
-  let info = "";
+  let info = '';
   let node = workInProgress;
   do {
     info += describeFiber(node);

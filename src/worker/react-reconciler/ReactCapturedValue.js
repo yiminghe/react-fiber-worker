@@ -7,14 +7,14 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
+import type { Fiber } from './ReactFiber';
 
-import { getStackAddendumByWorkInProgressFiber } from "shared/ReactFiberComponentTreeHook";
+import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
 
 export type CapturedValue<T> = {
   value: T,
   source: Fiber | null,
-  stack: string | null
+  stack: string | null,
 };
 
 export type CapturedError = {
@@ -24,18 +24,18 @@ export type CapturedError = {
   errorBoundary: ?Object,
   errorBoundaryFound: boolean,
   errorBoundaryName: string | null,
-  willRetry: boolean
+  willRetry: boolean,
 };
 
 export function createCapturedValue<T>(
   value: T,
-  source: Fiber
+  source: Fiber,
 ): CapturedValue<T> {
   // If the value is an error, call this function immediately after it is thrown
   // so the stack is accurate.
   return {
     value,
     source,
-    stack: getStackAddendumByWorkInProgressFiber(source)
+    stack: getStackAddendumByWorkInProgressFiber(source),
   };
 }

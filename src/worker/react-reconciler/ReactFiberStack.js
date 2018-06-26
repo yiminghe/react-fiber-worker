@@ -7,12 +7,12 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
+import type { Fiber } from './ReactFiber';
 
-import warning from "fbjs/lib/warning";
+import warning from 'fbjs/lib/warning';
 
 export type StackCursor<T> = {
-  current: T
+  current: T,
 };
 
 const valueStack: Array<any> = [];
@@ -27,7 +27,7 @@ let index = -1;
 
 function createCursor<T>(defaultValue: T): StackCursor<T> {
   return {
-    current: defaultValue
+    current: defaultValue,
   };
 }
 
@@ -38,14 +38,14 @@ function isEmpty(): boolean {
 function pop<T>(cursor: StackCursor<T>, fiber: Fiber): void {
   if (index < 0) {
     if (__DEV__) {
-      warning(false, "Unexpected pop.");
+      warning(false, 'Unexpected pop.');
     }
     return;
   }
 
   if (__DEV__) {
     if (fiber !== fiberStack[index]) {
-      warning(false, "Unexpected Fiber popped.");
+      warning(false, 'Unexpected Fiber popped.');
     }
   }
 
@@ -77,7 +77,7 @@ function checkThatStackIsEmpty() {
     if (index !== -1) {
       warning(
         false,
-        "Expected an empty stack. Something was not reset properly."
+        'Expected an empty stack. Something was not reset properly.',
       );
     }
   }
@@ -98,5 +98,5 @@ export {
   push,
   // DEV only:
   checkThatStackIsEmpty,
-  resetStackAfterFatalErrorInDev
+  resetStackAfterFatalErrorInDev,
 };

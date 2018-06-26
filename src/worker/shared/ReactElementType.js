@@ -9,7 +9,7 @@
 
 export type Source = {
   fileName: string,
-  lineNumber: number
+  lineNumber: number,
 };
 
 export type ReactElement = {
@@ -22,9 +22,9 @@ export type ReactElement = {
 
   // __DEV__
   _store: {
-    validated: boolean
+    validated: boolean,
   },
   _self: React$Element<any>,
   _shadowChildren: any,
-  _source: Source
+  _source: Source,
 };

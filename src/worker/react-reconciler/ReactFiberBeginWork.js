@@ -7,11 +7,11 @@
  * @flow
  */
 
-import type { ReactProviderType, ReactContext } from "shared/ReactTypes";
-import type { Fiber } from "react-reconciler/src/ReactFiber";
-import type { FiberRoot } from "./ReactFiberRoot";
-import type { ExpirationTime } from "./ReactFiberExpirationTime";
-import checkPropTypes from "prop-types/checkPropTypes";
+import type { ReactProviderType, ReactContext } from 'shared/ReactTypes';
+import type { Fiber } from 'react-reconciler/src/ReactFiber';
+import type { FiberRoot } from './ReactFiberRoot';
+import type { ExpirationTime } from './ReactFiberExpirationTime';
+import checkPropTypes from 'prop-types/checkPropTypes';
 
 import {
   IndeterminateComponent,
@@ -27,8 +27,8 @@ import {
   ContextProvider,
   ContextConsumer,
   Profiler,
-  TimeoutComponent
-} from "shared/ReactTypeOfWork";
+  TimeoutComponent,
+} from 'shared/ReactTypeOfWork';
 import {
   NoEffect,
   PerformedWork,
@@ -36,67 +36,67 @@ import {
   ContentReset,
   DidCapture,
   Update,
-  Ref
-} from "shared/ReactTypeOfSideEffect";
-import { ReactCurrentOwner } from "shared/ReactGlobalSharedState";
+  Ref,
+} from 'shared/ReactTypeOfSideEffect';
+import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
 import {
   enableGetDerivedStateFromCatch,
   enableSuspense,
   debugRenderPhaseSideEffects,
   debugRenderPhaseSideEffectsForStrictMode,
-  enableProfilerTimer
-} from "shared/ReactFeatureFlags";
-import invariant from "fbjs/lib/invariant";
-import getComponentName from "shared/getComponentName";
-import ReactStrictModeWarnings from "./ReactStrictModeWarnings";
-import warning from "fbjs/lib/warning";
-import ReactDebugCurrentFiber from "./ReactDebugCurrentFiber";
-import { cancelWorkTimer } from "./ReactDebugFiberPerf";
+  enableProfilerTimer,
+} from 'shared/ReactFeatureFlags';
+import invariant from 'fbjs/lib/invariant';
+import getComponentName from 'shared/getComponentName';
+import ReactStrictModeWarnings from './ReactStrictModeWarnings';
+import warning from 'fbjs/lib/warning';
+import ReactDebugCurrentFiber from './ReactDebugCurrentFiber';
+import { cancelWorkTimer } from './ReactDebugFiberPerf';
 
-import { applyDerivedStateFromProps } from "./ReactFiberClassComponent";
+import { applyDerivedStateFromProps } from './ReactFiberClassComponent';
 import {
   mountChildFibers,
   reconcileChildFibers,
-  cloneChildFibers
-} from "./ReactChildFiber";
-import { processUpdateQueue } from "./ReactUpdateQueue";
-import { NoWork, Never } from "./ReactFiberExpirationTime";
-import { AsyncMode, ProfileMode, StrictMode } from "./ReactTypeOfMode";
+  cloneChildFibers,
+} from './ReactChildFiber';
+import { processUpdateQueue } from './ReactUpdateQueue';
+import { NoWork, Never } from './ReactFiberExpirationTime';
+import { AsyncMode, ProfileMode, StrictMode } from './ReactTypeOfMode';
 import {
   shouldSetTextContent,
-  shouldDeprioritizeSubtree
-} from "./ReactFiberHostConfig";
-import { pushHostContext, pushHostContainer } from "./ReactFiberHostContext";
+  shouldDeprioritizeSubtree,
+} from './ReactFiberHostConfig';
+import { pushHostContext, pushHostContainer } from './ReactFiberHostContext';
 import {
   pushProvider,
   getContextCurrentValue,
-  getContextChangedBits
-} from "./ReactFiberNewContext";
+  getContextChangedBits,
+} from './ReactFiberNewContext';
 import {
   markActualRenderTimeStarted,
-  stopBaseRenderTimerIfRunning
-} from "./ReactProfilerTimer";
+  stopBaseRenderTimerIfRunning,
+} from './ReactProfilerTimer';
 import {
   getMaskedContext,
   getUnmaskedContext,
   hasContextChanged as hasLegacyContextChanged,
   pushContextProvider as pushLegacyContextProvider,
   pushTopLevelContextObject,
-  invalidateContextProvider
-} from "./ReactFiberContext";
+  invalidateContextProvider,
+} from './ReactFiberContext';
 import {
   enterHydrationState,
   resetHydrationState,
-  tryToClaimNextHydratableInstance
-} from "./ReactFiberHydrationContext";
+  tryToClaimNextHydratableInstance,
+} from './ReactFiberHydrationContext';
 import {
   adoptClassInstance,
   constructClassInstance,
   mountClassInstance,
   resumeMountClassInstance,
-  updateClassInstance
-} from "./ReactFiberClassComponent";
-import MAX_SIGNED_31_BIT_INT from "./maxSigned31BitInt";
+  updateClassInstance,
+} from './ReactFiberClassComponent';
+import MAX_SIGNED_31_BIT_INT from './maxSigned31BitInt';
 
 const { getCurrentFiberStackAddendum } = ReactDebugCurrentFiber;
 
@@ -116,7 +116,7 @@ function reconcileChildren(current, workInProgress, nextChildren) {
     current,
     workInProgress,
     nextChildren,
-    workInProgress.expirationTime
+    workInProgress.expirationTime,
   );
 }
 
@@ -124,7 +124,7 @@ function reconcileChildrenAtExpirationTime(
   current,
   workInProgress,
   nextChildren,
-  renderExpirationTime
+  renderExpirationTime,
 ) {
   if (current === null) {
     // If this is a fresh new component that hasn't been rendered yet, we
@@ -135,7 +135,7 @@ function reconcileChildrenAtExpirationTime(
       workInProgress,
       null,
       nextChildren,
-      renderExpirationTime
+      renderExpirationTime,
     );
   } else {
     // If the current child is the same as the work in progress, it means that
@@ -148,7 +148,7 @@ function reconcileChildrenAtExpirationTime(
       workInProgress,
       current.child,
       nextChildren,
-      renderExpirationTime
+      renderExpirationTime,
     );
   }
 }
@@ -170,7 +170,7 @@ function updateForwardRef(current, workInProgress) {
   let nextChildren;
   if (__DEV__) {
     ReactCurrentOwner.current = workInProgress;
-    ReactDebugCurrentFiber.setCurrentPhase("render");
+    ReactDebugCurrentFiber.setCurrentPhase('render');
     nextChildren = render(nextProps, ref);
     ReactDebugCurrentFiber.setCurrentPhase(null);
   } else {
@@ -258,7 +258,7 @@ function updateFunctionalComponent(current, workInProgress) {
 
   if (__DEV__) {
     ReactCurrentOwner.current = workInProgress;
-    ReactDebugCurrentFiber.setCurrentPhase("render");
+    ReactDebugCurrentFiber.setCurrentPhase('render');
     nextChildren = fn(nextProps, context);
     ReactDebugCurrentFiber.setCurrentPhase(null);
   } else {
@@ -274,7 +274,7 @@ function updateFunctionalComponent(current, workInProgress) {
 function updateClassComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ) {
   // Push context providers early to prevent context stack mismatches.
   // During mounting we don't know the child context yet as the instance doesn't exist.
@@ -287,7 +287,7 @@ function updateClassComponent(
       constructClassInstance(
         workInProgress,
         workInProgress.pendingProps,
-        renderExpirationTime
+        renderExpirationTime,
       );
       mountClassInstance(workInProgress, renderExpirationTime);
 
@@ -296,14 +296,14 @@ function updateClassComponent(
       // In a resume, we'll already have an instance we can reuse.
       shouldUpdate = resumeMountClassInstance(
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     }
   } else {
     shouldUpdate = updateClassInstance(
       current,
       workInProgress,
-      renderExpirationTime
+      renderExpirationTime,
     );
   }
   return finishClassComponent(
@@ -311,7 +311,7 @@ function updateClassComponent(
     workInProgress,
     shouldUpdate,
     hasContext,
-    renderExpirationTime
+    renderExpirationTime,
   );
 }
 
@@ -320,7 +320,7 @@ function finishClassComponent(
   workInProgress: Fiber,
   shouldUpdate: boolean,
   hasContext: boolean,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ) {
   // Refs should update even if shouldComponentUpdate returns false
   markRef(current, workInProgress);
@@ -345,7 +345,7 @@ function finishClassComponent(
   if (
     didCaptureError &&
     (!enableGetDerivedStateFromCatch ||
-      typeof ctor.getDerivedStateFromCatch !== "function")
+      typeof ctor.getDerivedStateFromCatch !== 'function')
   ) {
     // If we captured an error, but getDerivedStateFrom catch is not defined,
     // unmount all the children. componentDidCatch will schedule an update to
@@ -359,7 +359,7 @@ function finishClassComponent(
     }
   } else {
     if (__DEV__) {
-      ReactDebugCurrentFiber.setCurrentPhase("render");
+      ReactDebugCurrentFiber.setCurrentPhase('render');
       nextChildren = instance.render();
       if (
         debugRenderPhaseSideEffects ||
@@ -383,7 +383,7 @@ function finishClassComponent(
       current,
       workInProgress,
       null,
-      renderExpirationTime
+      renderExpirationTime,
     );
     workInProgress.child = null;
     // Now we can continue reconciling like normal. This has the effect of
@@ -394,7 +394,7 @@ function finishClassComponent(
     current,
     workInProgress,
     nextChildren,
-    renderExpirationTime
+    renderExpirationTime,
   );
   // Memoize props and state using the values we just used to render.
   // TODO: Restructure so we never read values from the instance.
@@ -415,7 +415,7 @@ function pushHostRootContext(workInProgress) {
     pushTopLevelContextObject(
       workInProgress,
       root.pendingContext,
-      root.pendingContext !== root.context
+      root.pendingContext !== root.context,
     );
   } else if (root.context) {
     // Should always be set
@@ -436,7 +436,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
       updateQueue,
       nextProps,
       null,
-      renderExpirationTime
+      renderExpirationTime,
     );
     const nextState = workInProgress.memoizedState;
     // Caution: React DevTools currently depends on this property
@@ -473,7 +473,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
         workInProgress,
         null,
         nextChildren,
-        renderExpirationTime
+        renderExpirationTime,
       );
     } else {
       // Otherwise reset hydration state in case we aborted and resumed another
@@ -567,12 +567,12 @@ function updateHostText(current, workInProgress) {
 function mountIndeterminateComponent(
   current,
   workInProgress,
-  renderExpirationTime
+  renderExpirationTime,
 ) {
   invariant(
     current === null,
-    "An indeterminate component should never have mounted. This error is " +
-      "likely caused by a bug in React. Please file an issue."
+    'An indeterminate component should never have mounted. This error is ' +
+      'likely caused by a bug in React. Please file an issue.',
   );
   const fn = workInProgress.type;
   const props = workInProgress.pendingProps;
@@ -582,16 +582,16 @@ function mountIndeterminateComponent(
   let value;
 
   if (__DEV__) {
-    if (fn.prototype && typeof fn.prototype.render === "function") {
-      const componentName = getComponentName(workInProgress) || "Unknown";
+    if (fn.prototype && typeof fn.prototype.render === 'function') {
+      const componentName = getComponentName(workInProgress) || 'Unknown';
 
       if (!didWarnAboutBadClass[componentName]) {
         warning(
           false,
           "The <%s /> component appears to have a render method, but doesn't extend React.Component. " +
-            "This is likely to cause errors. Change %s to extend React.Component instead.",
+            'This is likely to cause errors. Change %s to extend React.Component instead.',
           componentName,
-          componentName
+          componentName,
         );
         didWarnAboutBadClass[componentName] = true;
       }
@@ -610,9 +610,9 @@ function mountIndeterminateComponent(
   workInProgress.effectTag |= PerformedWork;
 
   if (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
-    typeof value.render === "function" &&
+    typeof value.render === 'function' &&
     value.$$typeof === undefined
   ) {
     const Component = workInProgress.type;
@@ -624,11 +624,11 @@ function mountIndeterminateComponent(
       value.state !== null && value.state !== undefined ? value.state : null;
 
     const getDerivedStateFromProps = Component.getDerivedStateFromProps;
-    if (typeof getDerivedStateFromProps === "function") {
+    if (typeof getDerivedStateFromProps === 'function') {
       applyDerivedStateFromProps(
         workInProgress,
         getDerivedStateFromProps,
-        props
+        props,
       );
     }
 
@@ -643,7 +643,7 @@ function mountIndeterminateComponent(
       workInProgress,
       true,
       hasContext,
-      renderExpirationTime
+      renderExpirationTime,
     );
   } else {
     // Proceed under the assumption that this is a functional component
@@ -654,42 +654,42 @@ function mountIndeterminateComponent(
       if (Component) {
         warning(
           !Component.childContextTypes,
-          "%s(...): childContextTypes cannot be defined on a functional component.",
-          Component.displayName || Component.name || "Component"
+          '%s(...): childContextTypes cannot be defined on a functional component.',
+          Component.displayName || Component.name || 'Component',
         );
       }
       if (workInProgress.ref !== null) {
-        let info = "";
+        let info = '';
         const ownerName = ReactDebugCurrentFiber.getCurrentFiberOwnerName();
         if (ownerName) {
-          info += "\n\nCheck the render method of `" + ownerName + "`.";
+          info += '\n\nCheck the render method of `' + ownerName + '`.';
         }
 
-        let warningKey = ownerName || workInProgress._debugID || "";
+        let warningKey = ownerName || workInProgress._debugID || '';
         const debugSource = workInProgress._debugSource;
         if (debugSource) {
-          warningKey = debugSource.fileName + ":" + debugSource.lineNumber;
+          warningKey = debugSource.fileName + ':' + debugSource.lineNumber;
         }
         if (!didWarnAboutStatelessRefs[warningKey]) {
           didWarnAboutStatelessRefs[warningKey] = true;
           warning(
             false,
-            "Stateless function components cannot be given refs. " +
-              "Attempts to access this ref will fail.%s%s",
+            'Stateless function components cannot be given refs. ' +
+              'Attempts to access this ref will fail.%s%s',
             info,
-            ReactDebugCurrentFiber.getCurrentFiberStackAddendum()
+            ReactDebugCurrentFiber.getCurrentFiberStackAddendum(),
           );
         }
       }
 
-      if (typeof fn.getDerivedStateFromProps === "function") {
-        const componentName = getComponentName(workInProgress) || "Unknown";
+      if (typeof fn.getDerivedStateFromProps === 'function') {
+        const componentName = getComponentName(workInProgress) || 'Unknown';
 
         if (!didWarnAboutGetDerivedStateOnFunctionalComponent[componentName]) {
           warning(
             false,
-            "%s: Stateless functional components do not support getDerivedStateFromProps.",
-            componentName
+            '%s: Stateless functional components do not support getDerivedStateFromProps.',
+            componentName,
           );
           didWarnAboutGetDerivedStateOnFunctionalComponent[
             componentName
@@ -754,7 +754,7 @@ function updatePortalComponent(current, workInProgress, renderExpirationTime) {
       workInProgress,
       null,
       nextChildren,
-      renderExpirationTime
+      renderExpirationTime,
     );
     memoizeProps(workInProgress, nextChildren);
   } else {
@@ -768,7 +768,7 @@ function propagateContextChange<V>(
   workInProgress: Fiber,
   context: ReactContext<V>,
   changedBits: number,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ): void {
   let fiber = workInProgress.child;
   if (fiber !== null) {
@@ -886,9 +886,9 @@ function updateContextProvider(current, workInProgress, renderExpirationTime) {
       checkPropTypes(
         providerPropTypes,
         newProps,
-        "prop",
-        "Context.Provider",
-        getCurrentFiberStackAddendum
+        'prop',
+        'Context.Provider',
+        getCurrentFiberStackAddendum,
       );
     }
   }
@@ -925,15 +925,15 @@ function updateContextProvider(current, workInProgress, renderExpirationTime) {
         changedBits = 0;
       } else {
         changedBits =
-          typeof context._calculateChangedBits === "function"
+          typeof context._calculateChangedBits === 'function'
             ? context._calculateChangedBits(oldValue, newValue)
             : MAX_SIGNED_31_BIT_INT;
         if (__DEV__) {
           warning(
             (changedBits & MAX_SIGNED_31_BIT_INT) === changedBits,
-            "calculateChangedBits: Expected the return value to be a " +
-              "31-bit integer. Instead received: %s",
-            changedBits
+            'calculateChangedBits: Expected the return value to be a ' +
+              '31-bit integer. Instead received: %s',
+            changedBits,
           );
         }
         changedBits |= 0;
@@ -950,7 +950,7 @@ function updateContextProvider(current, workInProgress, renderExpirationTime) {
             workInProgress,
             context,
             changedBits,
-            renderExpirationTime
+            renderExpirationTime,
           );
         }
       }
@@ -996,7 +996,7 @@ function updateContextConsumer(current, workInProgress, renderExpirationTime) {
       workInProgress,
       context,
       changedBits,
-      renderExpirationTime
+      renderExpirationTime,
     );
   } else if (oldProps === newProps) {
     // Skip over a memoized parent with a bitmask bailout even
@@ -1011,18 +1011,18 @@ function updateContextConsumer(current, workInProgress, renderExpirationTime) {
 
   if (__DEV__) {
     warning(
-      typeof render === "function",
-      "A context consumer was rendered with multiple children, or a child " +
+      typeof render === 'function',
+      'A context consumer was rendered with multiple children, or a child ' +
         "that isn't a function. A context consumer expects a single child " +
-        "that is a function. If you did pass a function, make sure there " +
-        "is no trailing or leading whitespace around it."
+        'that is a function. If you did pass a function, make sure there ' +
+        'is no trailing or leading whitespace around it.',
     );
   }
 
   let newChildren;
   if (__DEV__) {
     ReactCurrentOwner.current = workInProgress;
-    ReactDebugCurrentFiber.setCurrentPhase("render");
+    ReactDebugCurrentFiber.setCurrentPhase('render');
     newChildren = render(newValue);
     ReactDebugCurrentFiber.setCurrentPhase(null);
   } else {
@@ -1056,7 +1056,7 @@ function updateContextConsumer(current, workInProgress, renderExpirationTime) {
 
 function bailoutOnAlreadyFinishedWork(
   current,
-  workInProgress: Fiber
+  workInProgress: Fiber,
 ): Fiber | null {
   cancelWorkTimer(workInProgress);
 
@@ -1126,7 +1126,7 @@ function memoizeState(workInProgress: Fiber, nextState: any) {
 function beginWork(
   current: Fiber | null,
   workInProgress: Fiber,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ): Fiber | null {
   if (enableProfilerTimer) {
     if (workInProgress.mode & ProfileMode) {
@@ -1146,7 +1146,7 @@ function beginWork(
       return mountIndeterminateComponent(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     case FunctionalComponent:
       return updateFunctionalComponent(current, workInProgress);
@@ -1154,7 +1154,7 @@ function beginWork(
       return updateClassComponent(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     case HostRoot:
       return updateHostRoot(current, workInProgress, renderExpirationTime);
@@ -1166,13 +1166,13 @@ function beginWork(
       return updateTimeoutComponent(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     case HostPortal:
       return updatePortalComponent(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     case ForwardRef:
       return updateForwardRef(current, workInProgress);
@@ -1186,19 +1186,19 @@ function beginWork(
       return updateContextProvider(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     case ContextConsumer:
       return updateContextConsumer(
         current,
         workInProgress,
-        renderExpirationTime
+        renderExpirationTime,
       );
     default:
       invariant(
         false,
-        "Unknown unit of work tag. This error is likely caused by a bug in " +
-          "React. Please file an issue."
+        'Unknown unit of work tag. This error is likely caused by a bug in ' +
+          'React. Please file an issue.',
       );
   }
 }

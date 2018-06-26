@@ -12,24 +12,24 @@ import type {
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
   NativeMethodsMixinType,
-  ReactNativeBaseComponentViewConfig
-} from "./ReactNativeTypes";
+  ReactNativeBaseComponentViewConfig,
+} from './ReactNativeTypes';
 
-import invariant from "fbjs/lib/invariant";
+import invariant from 'fbjs/lib/invariant';
 // Modules provided by RN:
-import TextInputState from "TextInputState";
-import UIManager from "UIManager";
+import TextInputState from 'TextInputState';
+import UIManager from 'UIManager';
 
-import * as ReactNativeAttributePayload from "./ReactNativeAttributePayload";
+import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
 import {
   mountSafeCallback,
   throwOnStylesProp,
-  warnForStyleProps
-} from "./NativeMethodsMixinUtils";
+  warnForStyleProps,
+} from './NativeMethodsMixinUtils';
 
 export default function(
   findNodeHandle: any => ?number,
-  findHostInstance: any => any
+  findHostInstance: any => any,
 ) {
   /**
    * `NativeMethodsMixin` provides methods to access the underlying native
@@ -67,7 +67,7 @@ export default function(
     measure: function(callback: MeasureOnSuccessCallback) {
       UIManager.measure(
         findNodeHandle(this),
-        mountSafeCallback(this, callback)
+        mountSafeCallback(this, callback),
       );
     },
 
@@ -89,7 +89,7 @@ export default function(
     measureInWindow: function(callback: MeasureInWindowOnSuccessCallback) {
       UIManager.measureInWindow(
         findNodeHandle(this),
-        mountSafeCallback(this, callback)
+        mountSafeCallback(this, callback),
       );
     },
 
@@ -104,13 +104,13 @@ export default function(
     measureLayout: function(
       relativeToNativeNode: number,
       onSuccess: MeasureLayoutOnSuccessCallback,
-      onFail: () => void /* currently unused */
+      onFail: () => void /* currently unused */,
     ) {
       UIManager.measureLayout(
         findNodeHandle(this),
         relativeToNativeNode,
         mountSafeCallback(this, onFail),
-        mountSafeCallback(this, onSuccess)
+        mountSafeCallback(this, onSuccess),
       );
     },
 
@@ -151,7 +151,7 @@ export default function(
 
       const updatePayload = ReactNativeAttributePayload.create(
         nativeProps,
-        viewConfig.validAttributes
+        viewConfig.validAttributes,
       );
 
       // Avoid the overhead of bridge calls if there's no update.
@@ -161,7 +161,7 @@ export default function(
         UIManager.updateView(
           maybeInstance._nativeTag,
           viewConfig.uiViewClassName,
-          updatePayload
+          updatePayload,
         );
       }
     },
@@ -179,7 +179,7 @@ export default function(
      */
     blur: function() {
       TextInputState.blurTextInput(findNodeHandle(this));
-    }
+    },
   };
 
   if (__DEV__) {
@@ -192,7 +192,7 @@ export default function(
         !NativeMethodsMixin_DEV.componentWillReceiveProps &&
         !NativeMethodsMixin_DEV.UNSAFE_componentWillMount &&
         !NativeMethodsMixin_DEV.UNSAFE_componentWillReceiveProps,
-      "Do not override existing functions."
+      'Do not override existing functions.',
     );
     // TODO (bvaughn) Remove cWM and cWRP in a future version of React Native,
     // Once these lifecycles have been remove from the reconciler.
@@ -206,7 +206,7 @@ export default function(
       throwOnStylesProp(this, this.props);
     };
     NativeMethodsMixin_DEV.UNSAFE_componentWillReceiveProps = function(
-      newProps
+      newProps,
     ) {
       throwOnStylesProp(this, newProps);
     };

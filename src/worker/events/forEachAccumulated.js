@@ -19,7 +19,7 @@
 function forEachAccumulated<T>(
   arr: ?(Array<T> | T),
   cb: (elem: T) => void,
-  scope: ?any
+  scope: ?any,
 ) {
   if (Array.isArray(arr)) {
     arr.forEach(cb, scope);

@@ -16,7 +16,7 @@ export function mountSafeCallback(context: any, callback: ?Function): any {
     if (!callback) {
       return undefined;
     }
-    if (typeof context.__isMounted === "boolean") {
+    if (typeof context.__isMounted === 'boolean') {
       // TODO(gaearon): this is gross and should be removed.
       // It is currently necessary because View uses createClass,
       // and so any measure() calls on View (which are done by React
@@ -26,7 +26,7 @@ export function mountSafeCallback(context: any, callback: ?Function): any {
       }
       // The else branch is important so that we don't
       // trigger the deprecation warning by calling isMounted.
-    } else if (typeof context.isMounted === "function") {
+    } else if (typeof context.isMounted === 'function') {
       if (!context.isMounted()) {
         return undefined;
       }
@@ -40,16 +40,16 @@ export function throwOnStylesProp(component: any, props: any) {
     const owner = component._owner || null;
     const name = component.constructor.displayName;
     let msg =
-      "`styles` is not a supported property of `" +
+      '`styles` is not a supported property of `' +
       name +
-      "`, did " +
-      "you mean `style` (singular)?";
+      '`, did ' +
+      'you mean `style` (singular)?';
     if (owner && owner.constructor && owner.constructor.displayName) {
       msg +=
-        "\n\nCheck the `" +
+        '\n\nCheck the `' +
         owner.constructor.displayName +
-        "` parent " +
-        " component.";
+        '` parent ' +
+        ' component.';
     }
     throw new Error(msg);
   }
@@ -59,13 +59,13 @@ export function warnForStyleProps(props: any, validAttributes: any) {
   for (const key in validAttributes.style) {
     if (!(validAttributes[key] || props[key] === undefined)) {
       console.error(
-        "You are setting the style `{ " +
+        'You are setting the style `{ ' +
           key +
-          ": ... }` as a prop. You " +
-          "should nest it in a style object. " +
-          "E.g. `{ style: { " +
+          ': ... }` as a prop. You ' +
+          'should nest it in a style object. ' +
+          'E.g. `{ style: { ' +
           key +
-          ": ... } }`"
+          ': ... } }`',
       );
     }
   }

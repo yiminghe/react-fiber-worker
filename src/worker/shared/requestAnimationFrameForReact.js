@@ -7,10 +7,10 @@
  * @flow
  */
 
-"use strict";
+'use strict';
 
-import ExecutionEnvironment from "fbjs/lib/ExecutionEnvironment";
-import warning from "fbjs/lib/warning";
+import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
+import warning from 'fbjs/lib/warning';
 
 // We capture a local reference to any global, in case it gets polyfilled after
 // this module is initially evaluated.
@@ -20,12 +20,12 @@ const localRequestAnimationFrame = requestAnimationFrame;
 if (__DEV__) {
   if (
     ExecutionEnvironment.canUseDOM &&
-    typeof localRequestAnimationFrame !== "function"
+    typeof localRequestAnimationFrame !== 'function'
   ) {
     warning(
       false,
-      "React depends on requestAnimationFrame. Make sure that you load a " +
-        "polyfill in older browsers. https://fb.me/react-polyfills"
+      'React depends on requestAnimationFrame. Make sure that you load a ' +
+        'polyfill in older browsers. https://fb.me/react-polyfills',
     );
   }
 }

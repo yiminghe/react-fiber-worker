@@ -7,36 +7,36 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
-import type { FiberRoot } from "./ReactFiberRoot";
+import type { Fiber } from './ReactFiber';
+import type { FiberRoot } from './ReactFiberRoot';
 import type {
   Instance,
   TextInstance,
   Container,
-  PublicInstance
-} from "./ReactFiberHostConfig";
-import type { ReactNodeList } from "shared/ReactTypes";
-import type { ExpirationTime } from "./ReactFiberExpirationTime";
+  PublicInstance,
+} from './ReactFiberHostConfig';
+import type { ReactNodeList } from 'shared/ReactTypes';
+import type { ExpirationTime } from './ReactFiberExpirationTime';
 
 import {
   findCurrentHostFiber,
-  findCurrentHostFiberWithNoPortals
-} from "react-reconciler/reflection";
-import * as ReactInstanceMap from "shared/ReactInstanceMap";
-import { HostComponent } from "shared/ReactTypeOfWork";
-import emptyObject from "fbjs/lib/emptyObject";
-import getComponentName from "shared/getComponentName";
-import invariant from "fbjs/lib/invariant";
-import warning from "fbjs/lib/warning";
+  findCurrentHostFiberWithNoPortals,
+} from 'react-reconciler/reflection';
+import * as ReactInstanceMap from 'shared/ReactInstanceMap';
+import { HostComponent } from 'shared/ReactTypeOfWork';
+import emptyObject from 'fbjs/lib/emptyObject';
+import getComponentName from 'shared/getComponentName';
+import invariant from 'fbjs/lib/invariant';
+import warning from 'fbjs/lib/warning';
 
-import { getPublicInstance } from "./ReactFiberHostConfig";
+import { getPublicInstance } from './ReactFiberHostConfig';
 import {
   findCurrentUnmaskedContext,
   isContextProvider,
-  processChildContext
-} from "./ReactFiberContext";
-import { createFiberRoot } from "./ReactFiberRoot";
-import * as ReactFiberDevToolsHook from "./ReactFiberDevToolsHook";
+  processChildContext,
+} from './ReactFiberContext';
+import { createFiberRoot } from './ReactFiberRoot';
+import * as ReactFiberDevToolsHook from './ReactFiberDevToolsHook';
 import {
   computeUniqueAsyncExpiration,
   recalculateCurrentTime,
@@ -51,11 +51,11 @@ import {
   deferredUpdates,
   syncUpdates,
   interactiveUpdates,
-  flushInteractiveUpdates
-} from "./ReactFiberScheduler";
-import { createUpdate, enqueueUpdate } from "./ReactUpdateQueue";
-import ReactFiberInstrumentation from "./ReactFiberInstrumentation";
-import ReactDebugCurrentFiber from "./ReactDebugCurrentFiber";
+  flushInteractiveUpdates,
+} from './ReactFiberScheduler';
+import { createUpdate, enqueueUpdate } from './ReactUpdateQueue';
+import ReactFiberInstrumentation from './ReactFiberInstrumentation';
+import ReactDebugCurrentFiber from './ReactDebugCurrentFiber';
 
 type OpaqueRoot = FiberRoot;
 
@@ -73,7 +73,7 @@ type DevToolsConfig = {|
   // Used by RN in-app inspector.
   // This API is unfortunately RN-specific.
   // TODO: Change it to accept Fiber instead and type it properly.
-  getInspectorDataForViewTag?: (tag: number) => Object
+  getInspectorDataForViewTag?: (tag: number) => Object,
 |};
 
 let didWarnAboutNestedUpdates;
@@ -83,7 +83,7 @@ if (__DEV__) {
 }
 
 function getContextForSubtree(
-  parentComponent: ?React$Component<any, any>
+  parentComponent: ?React$Component<any, any>,
 ): Object {
   if (!parentComponent) {
     return emptyObject;
@@ -100,22 +100,22 @@ function scheduleRootUpdate(
   current: Fiber,
   element: ReactNodeList,
   expirationTime: ExpirationTime,
-  callback: ?Function
+  callback: ?Function,
 ) {
   if (__DEV__) {
     if (
-      ReactDebugCurrentFiber.phase === "render" &&
+      ReactDebugCurrentFiber.phase === 'render' &&
       ReactDebugCurrentFiber.current !== null &&
       !didWarnAboutNestedUpdates
     ) {
       didWarnAboutNestedUpdates = true;
       warning(
         false,
-        "Render methods should be a pure function of props and state; " +
-          "triggering nested component updates from render is not allowed. " +
-          "If necessary, trigger nested updates in componentDidUpdate.\n\n" +
-          "Check the render method of %s.",
-        getComponentName(ReactDebugCurrentFiber.current) || "Unknown"
+        'Render methods should be a pure function of props and state; ' +
+          'triggering nested component updates from render is not allowed. ' +
+          'If necessary, trigger nested updates in componentDidUpdate.\n\n' +
+          'Check the render method of %s.',
+        getComponentName(ReactDebugCurrentFiber.current) || 'Unknown',
       );
     }
   }
@@ -128,10 +128,10 @@ function scheduleRootUpdate(
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
     warning(
-      typeof callback === "function",
-      "render(...): Expected the last optional `callback` argument to be a " +
-        "function. Instead received: %s.",
-      callback
+      typeof callback === 'function',
+      'render(...): Expected the last optional `callback` argument to be a ' +
+        'function. Instead received: %s.',
+      callback,
     );
     update.callback = callback;
   }
@@ -146,7 +146,7 @@ export function updateContainerAtExpirationTime(
   container: OpaqueRoot,
   parentComponent: ?React$Component<any, any>,
   expirationTime: ExpirationTime,
-  callback: ?Function
+  callback: ?Function,
 ) {
   // TODO: If this is a nested container, this won't be the root.
   const current = container.current;
@@ -176,13 +176,13 @@ export function updateContainerAtExpirationTime(
 function findHostInstance(component: Object): PublicInstance | null {
   const fiber = ReactInstanceMap.get(component);
   if (fiber === undefined) {
-    if (typeof component.render === "function") {
-      invariant(false, "Unable to find node on an unmounted component.");
+    if (typeof component.render === 'function') {
+      invariant(false, 'Unable to find node on an unmounted component.');
     } else {
       invariant(
         false,
-        "Argument appears to not be a ReactComponent. Keys: %s",
-        Object.keys(component)
+        'Argument appears to not be a ReactComponent. Keys: %s',
+        Object.keys(component),
       );
     }
   }
@@ -196,7 +196,7 @@ function findHostInstance(component: Object): PublicInstance | null {
 export function createContainer(
   containerInfo: Container,
   isAsync: boolean,
-  hydrate: boolean
+  hydrate: boolean,
 ): OpaqueRoot {
   return createFiberRoot(containerInfo, isAsync, hydrate);
 }
@@ -205,7 +205,7 @@ export function updateContainer(
   element: ReactNodeList,
   container: OpaqueRoot,
   parentComponent: ?React$Component<any, any>,
-  callback: ?Function
+  callback: ?Function,
 ): ExpirationTime {
   const current = container.current;
   const currentTime = recalculateCurrentTime();
@@ -215,7 +215,7 @@ export function updateContainer(
     container,
     parentComponent,
     expirationTime,
-    callback
+    callback,
   );
 }
 
@@ -230,11 +230,11 @@ export {
   interactiveUpdates,
   flushInteractiveUpdates,
   flushControlled,
-  flushSync
+  flushSync,
 };
 
 export function getPublicRootInstance(
-  container: OpaqueRoot
+  container: OpaqueRoot,
 ): React$Component<any, any> | PublicInstance | null {
   const containerFiber = container.current;
   if (!containerFiber.child) {
@@ -251,7 +251,7 @@ export function getPublicRootInstance(
 export { findHostInstance };
 
 export function findHostInstanceWithNoPortals(
-  fiber: Fiber
+  fiber: Fiber,
 ): PublicInstance | null {
   const hostFiber = findCurrentHostFiberWithNoPortals(fiber);
   if (hostFiber === null) {
@@ -277,6 +277,6 @@ export function injectIntoDevTools(devToolsConfig: DevToolsConfig): boolean {
         return null;
       }
       return findFiberByHostInstance(instance);
-    }
+    },
   });
 }

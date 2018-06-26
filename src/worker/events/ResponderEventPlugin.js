@@ -5,22 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { getLowestCommonAncestor, isAncestor } from "shared/ReactTreeTraversal";
+import { getLowestCommonAncestor, isAncestor } from 'shared/ReactTreeTraversal';
 
 import {
   executeDirectDispatch,
   hasDispatches,
   executeDispatchesInOrderStopAtTrue,
-  getInstanceFromNode
-} from "./EventPluginUtils";
+  getInstanceFromNode,
+} from './EventPluginUtils';
 import {
   accumulateDirectDispatches,
   accumulateTwoPhaseDispatches,
-  accumulateTwoPhaseDispatchesSkipTarget
-} from "./EventPropagators";
-import ResponderSyntheticEvent from "./ResponderSyntheticEvent";
-import ResponderTouchHistoryStore from "./ResponderTouchHistoryStore";
-import accumulate from "./accumulate";
+  accumulateTwoPhaseDispatchesSkipTarget,
+} from './EventPropagators';
+import ResponderSyntheticEvent from './ResponderSyntheticEvent';
+import ResponderTouchHistoryStore from './ResponderTouchHistoryStore';
+import accumulate from './accumulate';
 import {
   TOP_SCROLL,
   TOP_SELECTION_CHANGE,
@@ -30,8 +30,8 @@ import {
   isEndish,
   startDependencies,
   moveDependencies,
-  endDependencies
-} from "./ResponderTopLevelEventTypes";
+  endDependencies,
+} from './ResponderTopLevelEventTypes';
 
 /**
  * Instance of element that should respond to touch/move types of interactions,
@@ -52,7 +52,7 @@ const changeResponder = function(nextResponderInst, blockHostResponder) {
     ResponderEventPlugin.GlobalResponderHandler.onChange(
       oldResponderInst,
       nextResponderInst,
-      blockHostResponder
+      blockHostResponder,
     );
   }
 };
@@ -64,10 +64,10 @@ const eventTypes = {
    */
   startShouldSetResponder: {
     phasedRegistrationNames: {
-      bubbled: "onStartShouldSetResponder",
-      captured: "onStartShouldSetResponderCapture"
+      bubbled: 'onStartShouldSetResponder',
+      captured: 'onStartShouldSetResponderCapture',
     },
-    dependencies: startDependencies
+    dependencies: startDependencies,
   },
 
   /**
@@ -81,10 +81,10 @@ const eventTypes = {
    */
   scrollShouldSetResponder: {
     phasedRegistrationNames: {
-      bubbled: "onScrollShouldSetResponder",
-      captured: "onScrollShouldSetResponderCapture"
+      bubbled: 'onScrollShouldSetResponder',
+      captured: 'onScrollShouldSetResponderCapture',
     },
-    dependencies: [TOP_SCROLL]
+    dependencies: [TOP_SCROLL],
   },
 
   /**
@@ -96,10 +96,10 @@ const eventTypes = {
    */
   selectionChangeShouldSetResponder: {
     phasedRegistrationNames: {
-      bubbled: "onSelectionChangeShouldSetResponder",
-      captured: "onSelectionChangeShouldSetResponderCapture"
+      bubbled: 'onSelectionChangeShouldSetResponder',
+      captured: 'onSelectionChangeShouldSetResponderCapture',
     },
-    dependencies: [TOP_SELECTION_CHANGE]
+    dependencies: [TOP_SELECTION_CHANGE],
   },
 
   /**
@@ -108,47 +108,47 @@ const eventTypes = {
    */
   moveShouldSetResponder: {
     phasedRegistrationNames: {
-      bubbled: "onMoveShouldSetResponder",
-      captured: "onMoveShouldSetResponderCapture"
+      bubbled: 'onMoveShouldSetResponder',
+      captured: 'onMoveShouldSetResponderCapture',
     },
-    dependencies: moveDependencies
+    dependencies: moveDependencies,
   },
 
   /**
    * Direct responder events dispatched directly to responder. Do not bubble.
    */
   responderStart: {
-    registrationName: "onResponderStart",
-    dependencies: startDependencies
+    registrationName: 'onResponderStart',
+    dependencies: startDependencies,
   },
   responderMove: {
-    registrationName: "onResponderMove",
-    dependencies: moveDependencies
+    registrationName: 'onResponderMove',
+    dependencies: moveDependencies,
   },
   responderEnd: {
-    registrationName: "onResponderEnd",
-    dependencies: endDependencies
+    registrationName: 'onResponderEnd',
+    dependencies: endDependencies,
   },
   responderRelease: {
-    registrationName: "onResponderRelease",
-    dependencies: endDependencies
+    registrationName: 'onResponderRelease',
+    dependencies: endDependencies,
   },
   responderTerminationRequest: {
-    registrationName: "onResponderTerminationRequest",
-    dependencies: []
+    registrationName: 'onResponderTerminationRequest',
+    dependencies: [],
   },
   responderGrant: {
-    registrationName: "onResponderGrant",
-    dependencies: []
+    registrationName: 'onResponderGrant',
+    dependencies: [],
   },
   responderReject: {
-    registrationName: "onResponderReject",
-    dependencies: []
+    registrationName: 'onResponderReject',
+    dependencies: [],
   },
   responderTerminate: {
-    registrationName: "onResponderTerminate",
-    dependencies: []
-  }
+    registrationName: 'onResponderTerminate',
+    dependencies: [],
+  },
 };
 
 /**
@@ -345,7 +345,7 @@ function setResponderAndExtractTransfer(
   topLevelType,
   targetInst,
   nativeEvent,
-  nativeEventTarget
+  nativeEventTarget,
 ) {
   const shouldSetEventType = isStartish(topLevelType)
     ? eventTypes.startShouldSetResponder
@@ -369,7 +369,7 @@ function setResponderAndExtractTransfer(
     shouldSetEventType,
     bubbleShouldSetFrom,
     nativeEvent,
-    nativeEventTarget
+    nativeEventTarget,
   );
   shouldSetEvent.touchHistory = ResponderTouchHistoryStore.touchHistory;
   if (skipOverBubbleShouldSetFrom) {
@@ -390,7 +390,7 @@ function setResponderAndExtractTransfer(
     eventTypes.responderGrant,
     wantsResponderInst,
     nativeEvent,
-    nativeEventTarget
+    nativeEventTarget,
   );
   grantEvent.touchHistory = ResponderTouchHistoryStore.touchHistory;
 
@@ -401,7 +401,7 @@ function setResponderAndExtractTransfer(
       eventTypes.responderTerminationRequest,
       responderInst,
       nativeEvent,
-      nativeEventTarget
+      nativeEventTarget,
     );
     terminationRequestEvent.touchHistory =
       ResponderTouchHistoryStore.touchHistory;
@@ -418,7 +418,7 @@ function setResponderAndExtractTransfer(
         eventTypes.responderTerminate,
         responderInst,
         nativeEvent,
-        nativeEventTarget
+        nativeEventTarget,
       );
       terminateEvent.touchHistory = ResponderTouchHistoryStore.touchHistory;
       accumulateDirectDispatches(terminateEvent);
@@ -429,7 +429,7 @@ function setResponderAndExtractTransfer(
         eventTypes.responderReject,
         wantsResponderInst,
         nativeEvent,
-        nativeEventTarget
+        nativeEventTarget,
       );
       rejectEvent.touchHistory = ResponderTouchHistoryStore.touchHistory;
       accumulateDirectDispatches(rejectEvent);
@@ -506,7 +506,7 @@ const ResponderEventPlugin = {
     topLevelType,
     targetInst,
     nativeEvent,
-    nativeEventTarget
+    nativeEventTarget,
   ) {
     if (isStartish(topLevelType)) {
       trackedTouchCount += 1;
@@ -515,7 +515,7 @@ const ResponderEventPlugin = {
         trackedTouchCount -= 1;
       } else {
         console.error(
-          "Ended a touch event which was not counted in `trackedTouchCount`."
+          'Ended a touch event which was not counted in `trackedTouchCount`.',
         );
         return null;
       }
@@ -528,7 +528,7 @@ const ResponderEventPlugin = {
           topLevelType,
           targetInst,
           nativeEvent,
-          nativeEventTarget
+          nativeEventTarget,
         )
       : null;
     // Responder may or may not have transferred on a new touch start/move.
@@ -557,7 +557,7 @@ const ResponderEventPlugin = {
         incrementalTouch,
         responderInst,
         nativeEvent,
-        nativeEventTarget
+        nativeEventTarget,
       );
       gesture.touchHistory = ResponderTouchHistoryStore.touchHistory;
       accumulateDirectDispatches(gesture);
@@ -581,7 +581,7 @@ const ResponderEventPlugin = {
         finalTouch,
         responderInst,
         nativeEvent,
-        nativeEventTarget
+        nativeEventTarget,
       );
       finalEvent.touchHistory = ResponderTouchHistoryStore.touchHistory;
       accumulateDirectDispatches(finalEvent);
@@ -602,8 +602,8 @@ const ResponderEventPlugin = {
      */
     injectGlobalResponderHandler(GlobalResponderHandler) {
       ResponderEventPlugin.GlobalResponderHandler = GlobalResponderHandler;
-    }
-  }
+    },
+  },
 };
 
 export default ResponderEventPlugin;

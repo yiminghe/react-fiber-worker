@@ -2,14 +2,14 @@ function toTouchObject(touch) {
   return {
     identifier: touch.identifier,
     pageX: touch.pageX,
-    pageY: touch.pageY
+    pageY: touch.pageY,
   };
 }
 
 const map = [].map;
 
 export default function bindDOMEvent(bridge) {
-  document.addEventListener("touchstart", e => {
+  document.addEventListener('touchstart', e => {
     const { target } = e;
     const touches = map.call(e.touches, toTouchObject);
     touches.forEach(t => {
@@ -18,22 +18,23 @@ export default function bindDOMEvent(bridge) {
     });
     const changedIndices = touches.map((t, i) => i);
     bridge.postMessage({
-      type: "touchEvent",
-      eventTopLevelType: "topTouchStart",
+      type: 'touchEvent',
+      eventTopLevelType: 'topTouchStart',
       changedIndices,
-      touches
+      touches,
     });
   });
 
-  document.addEventListener("click", e => {
+  document.addEventListener('click', e => {
     const { target } = e;
     bridge.postMessage({
-      type: "clickEvent",
+      type: 'event',
+      eventTopLevelType: 'topClick',
       e: {
         target: target.reactTag,
         pageX: e.pageX,
-        pageY: e.pageY
-      }
+        pageY: e.pageY,
+      },
     });
   });
 }

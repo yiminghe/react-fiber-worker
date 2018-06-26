@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
+import type { Fiber } from './ReactFiber';
 
-import { enableUserTimingAPI } from "shared/ReactFeatureFlags";
-import getComponentName from "shared/getComponentName";
+import { enableUserTimingAPI } from 'shared/ReactFeatureFlags';
+import getComponentName from 'shared/getComponentName';
 import {
   HostRoot,
   HostComponent,
@@ -19,30 +19,30 @@ import {
   Fragment,
   ContextProvider,
   ContextConsumer,
-  Mode
-} from "shared/ReactTypeOfWork";
+  Mode,
+} from 'shared/ReactTypeOfWork';
 
 type MeasurementPhase =
-  | "componentWillMount"
-  | "componentWillUnmount"
-  | "componentWillReceiveProps"
-  | "shouldComponentUpdate"
-  | "componentWillUpdate"
-  | "componentDidUpdate"
-  | "componentDidMount"
-  | "getChildContext"
-  | "getSnapshotBeforeUpdate";
+  | 'componentWillMount'
+  | 'componentWillUnmount'
+  | 'componentWillReceiveProps'
+  | 'shouldComponentUpdate'
+  | 'componentWillUpdate'
+  | 'componentDidUpdate'
+  | 'componentDidMount'
+  | 'getChildContext'
+  | 'getSnapshotBeforeUpdate';
 
 // Prefix measurements so that it's possible to filter them.
 // Longer prefixes are hard to read in DevTools.
-const reactEmoji = "\u269B";
-const warningEmoji = "\u26D4";
+const reactEmoji = '\u269B';
+const warningEmoji = '\u26D4';
 const supportsUserTiming =
-  typeof performance !== "undefined" &&
-  typeof performance.mark === "function" &&
-  typeof performance.clearMarks === "function" &&
-  typeof performance.measure === "function" &&
-  typeof performance.clearMeasures === "function";
+  typeof performance !== 'undefined' &&
+  typeof performance.mark === 'function' &&
+  typeof performance.clearMarks === 'function' &&
+  typeof performance.measure === 'function' &&
+  typeof performance.clearMeasures === 'function';
 
 // Keep track of current fiber so that we know the path to unwind on pause.
 // TODO: this looks the same as nextUnitOfWork in scheduler. Can we unify them?
@@ -72,7 +72,7 @@ const formatMarkName = (markName: string) => {
 
 const formatLabel = (label: string, warning: string | null) => {
   const prefix = warning ? `${warningEmoji} ` : `${reactEmoji} `;
-  const suffix = warning ? ` Warning: ${warning}` : "";
+  const suffix = warning ? ` Warning: ${warning}` : '';
   return `${prefix}${label}${suffix}`;
 };
 
@@ -106,11 +106,11 @@ const getFiberMarkName = (label: string, debugID: number) => {
 const getFiberLabel = (
   componentName: string,
   isMounted: boolean,
-  phase: MeasurementPhase | null
+  phase: MeasurementPhase | null,
 ) => {
   if (phase === null) {
     // These are composite component total time measurements.
-    return `${componentName} [${isMounted ? "update" : "mount"}]`;
+    return `${componentName} [${isMounted ? 'update' : 'mount'}]`;
   } else {
     // Composite component methods.
     return `${componentName}.${phase}`;
@@ -119,9 +119,9 @@ const getFiberLabel = (
 
 const beginFiberMark = (
   fiber: Fiber,
-  phase: MeasurementPhase | null
+  phase: MeasurementPhase | null,
 ): boolean => {
-  const componentName = getComponentName(fiber) || "Unknown";
+  const componentName = getComponentName(fiber) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -140,7 +140,7 @@ const beginFiberMark = (
 };
 
 const clearFiberMark = (fiber: Fiber, phase: MeasurementPhase | null) => {
-  const componentName = getComponentName(fiber) || "Unknown";
+  const componentName = getComponentName(fiber) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -151,9 +151,9 @@ const clearFiberMark = (fiber: Fiber, phase: MeasurementPhase | null) => {
 const endFiberMark = (
   fiber: Fiber,
   phase: MeasurementPhase | null,
-  warning: string | null
+  warning: string | null,
 ) => {
-  const componentName = getComponentName(fiber) || "Unknown";
+  const componentName = getComponentName(fiber) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -229,8 +229,8 @@ export function recordScheduleUpdate(): void {
     }
     if (
       currentPhase !== null &&
-      currentPhase !== "componentWillMount" &&
-      currentPhase !== "componentWillReceiveProps"
+      currentPhase !== 'componentWillMount' &&
+      currentPhase !== 'componentWillReceiveProps'
     ) {
       hasScheduledUpdateInCurrentPhase = true;
     }
@@ -241,23 +241,23 @@ export function startRequestCallbackTimer(): void {
   if (enableUserTimingAPI) {
     if (supportsUserTiming && !isWaitingForCallback) {
       isWaitingForCallback = true;
-      beginMark("(Waiting for async callback...)");
+      beginMark('(Waiting for async callback...)');
     }
   }
 }
 
 export function stopRequestCallbackTimer(
   didExpire: boolean,
-  expirationTime: number
+  expirationTime: number,
 ): void {
   if (enableUserTimingAPI) {
     if (supportsUserTiming) {
       isWaitingForCallback = false;
-      const warning = didExpire ? "React was blocked by main thread" : null;
+      const warning = didExpire ? 'React was blocked by main thread' : null;
       endMark(
         `(Waiting for async callback... will force flush in ${expirationTime} ms)`,
-        "(Waiting for async callback...)",
-        warning
+        '(Waiting for async callback...)',
+        warning,
       );
     }
   }
@@ -315,7 +315,7 @@ export function stopFailedWorkTimer(fiber: Fiber): void {
       return;
     }
     fiber._debugIsCurrentlyTiming = false;
-    const warning = "An error was thrown inside this error boundary";
+    const warning = 'An error was thrown inside this error boundary';
     endFiberMark(fiber, null, warning);
   }
 }
@@ -341,7 +341,7 @@ export function stopPhaseTimer(): void {
     }
     if (currentPhase !== null && currentPhaseFiber !== null) {
       const warning = hasScheduledUpdateInCurrentPhase
-        ? "Scheduled a cascading update"
+        ? 'Scheduled a cascading update'
         : null;
       endFiberMark(currentPhaseFiber, currentPhase, warning);
     }
@@ -359,7 +359,7 @@ export function startWorkLoopTimer(nextUnitOfWork: Fiber | null): void {
     commitCountInCurrentWorkLoop = 0;
     // This is top level call.
     // Any other measurements are performed within.
-    beginMark("(React Tree Reconciliation)");
+    beginMark('(React Tree Reconciliation)');
     // Resume any measurements that were in progress during the last loop.
     resumeTimers();
   }
@@ -367,7 +367,7 @@ export function startWorkLoopTimer(nextUnitOfWork: Fiber | null): void {
 
 export function stopWorkLoopTimer(
   interruptedBy: Fiber | null,
-  didCompleteRoot: boolean
+  didCompleteRoot: boolean,
 ): void {
   if (enableUserTimingAPI) {
     if (!supportsUserTiming) {
@@ -376,21 +376,21 @@ export function stopWorkLoopTimer(
     let warning = null;
     if (interruptedBy !== null) {
       if (interruptedBy.tag === HostRoot) {
-        warning = "A top-level update interrupted the previous render";
+        warning = 'A top-level update interrupted the previous render';
       } else {
-        const componentName = getComponentName(interruptedBy) || "Unknown";
+        const componentName = getComponentName(interruptedBy) || 'Unknown';
         warning = `An update to ${componentName} interrupted the previous render`;
       }
     } else if (commitCountInCurrentWorkLoop > 1) {
-      warning = "There were cascading updates";
+      warning = 'There were cascading updates';
     }
     commitCountInCurrentWorkLoop = 0;
     let label = didCompleteRoot
-      ? "(React Tree Reconciliation: Completed Root)"
-      : "(React Tree Reconciliation: Yielded)";
+      ? '(React Tree Reconciliation: Completed Root)'
+      : '(React Tree Reconciliation: Yielded)';
     // Pause any measurements until the next loop.
     pauseTimers();
-    endMark(label, "(React Tree Reconciliation)", warning);
+    endMark(label, '(React Tree Reconciliation)', warning);
   }
 }
 
@@ -402,7 +402,7 @@ export function startCommitTimer(): void {
     isCommitting = true;
     hasScheduledUpdateInCurrentCommit = false;
     labelsInCurrentCommit.clear();
-    beginMark("(Committing Changes)");
+    beginMark('(Committing Changes)');
   }
 }
 
@@ -414,16 +414,16 @@ export function stopCommitTimer(): void {
 
     let warning = null;
     if (hasScheduledUpdateInCurrentCommit) {
-      warning = "Lifecycle hook scheduled a cascading update";
+      warning = 'Lifecycle hook scheduled a cascading update';
     } else if (commitCountInCurrentWorkLoop > 0) {
-      warning = "Caused by a cascading update in earlier commit";
+      warning = 'Caused by a cascading update in earlier commit';
     }
     hasScheduledUpdateInCurrentCommit = false;
     commitCountInCurrentWorkLoop++;
     isCommitting = false;
     labelsInCurrentCommit.clear();
 
-    endMark("(Committing Changes)", "(Committing Changes)", warning);
+    endMark('(Committing Changes)', '(Committing Changes)', warning);
   }
 }
 
@@ -433,7 +433,7 @@ export function startCommitSnapshotEffectsTimer(): void {
       return;
     }
     effectCountInCurrentCommit = 0;
-    beginMark("(Committing Snapshot Effects)");
+    beginMark('(Committing Snapshot Effects)');
   }
 }
 
@@ -446,8 +446,8 @@ export function stopCommitSnapshotEffectsTimer(): void {
     effectCountInCurrentCommit = 0;
     endMark(
       `(Committing Snapshot Effects: ${count} Total)`,
-      "(Committing Snapshot Effects)",
-      null
+      '(Committing Snapshot Effects)',
+      null,
     );
   }
 }
@@ -458,7 +458,7 @@ export function startCommitHostEffectsTimer(): void {
       return;
     }
     effectCountInCurrentCommit = 0;
-    beginMark("(Committing Host Effects)");
+    beginMark('(Committing Host Effects)');
   }
 }
 
@@ -471,8 +471,8 @@ export function stopCommitHostEffectsTimer(): void {
     effectCountInCurrentCommit = 0;
     endMark(
       `(Committing Host Effects: ${count} Total)`,
-      "(Committing Host Effects)",
-      null
+      '(Committing Host Effects)',
+      null,
     );
   }
 }
@@ -483,7 +483,7 @@ export function startCommitLifeCyclesTimer(): void {
       return;
     }
     effectCountInCurrentCommit = 0;
-    beginMark("(Calling Lifecycle Methods)");
+    beginMark('(Calling Lifecycle Methods)');
   }
 }
 
@@ -496,8 +496,8 @@ export function stopCommitLifeCyclesTimer(): void {
     effectCountInCurrentCommit = 0;
     endMark(
       `(Calling Lifecycle Methods: ${count} Total)`,
-      "(Calling Lifecycle Methods)",
-      null
+      '(Calling Lifecycle Methods)',
+      null,
     );
   }
 }

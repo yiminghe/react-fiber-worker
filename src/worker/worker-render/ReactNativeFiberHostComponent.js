@@ -12,19 +12,19 @@ import type {
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
   NativeMethodsMixinType,
-  ReactNativeBaseComponentViewConfig
-} from "./ReactNativeTypes";
-import type { Instance } from "./ReactNativeHostConfig";
+  ReactNativeBaseComponentViewConfig,
+} from './ReactNativeTypes';
+import type { Instance } from './ReactNativeHostConfig';
 
 // Modules provided by RN:
-import TextInputState from "TextInputState";
-import UIManager from "UIManager";
+import TextInputState from 'TextInputState';
+import UIManager from 'UIManager';
 
-import * as ReactNativeAttributePayload from "./ReactNativeAttributePayload";
+import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
 import {
   mountSafeCallback,
-  warnForStyleProps
-} from "./NativeMethodsMixinUtils";
+  warnForStyleProps,
+} from './NativeMethodsMixinUtils';
 
 /**
  * This component defines the same methods as NativeMethodsMixin but without the
@@ -59,20 +59,20 @@ class ReactNativeFiberHostComponent {
   measureInWindow(callback: MeasureInWindowOnSuccessCallback) {
     UIManager.measureInWindow(
       this._nativeTag,
-      mountSafeCallback(this, callback)
+      mountSafeCallback(this, callback),
     );
   }
 
   measureLayout(
     relativeToNativeNode: number,
     onSuccess: MeasureLayoutOnSuccessCallback,
-    onFail: () => void /* currently unused */
+    onFail: () => void /* currently unused */,
   ) {
     UIManager.measureLayout(
       this._nativeTag,
       relativeToNativeNode,
       mountSafeCallback(this, onFail),
-      mountSafeCallback(this, onSuccess)
+      mountSafeCallback(this, onSuccess),
     );
   }
 
@@ -83,7 +83,7 @@ class ReactNativeFiberHostComponent {
 
     const updatePayload = ReactNativeAttributePayload.create(
       nativeProps,
-      this.viewConfig.validAttributes
+      this.viewConfig.validAttributes,
     );
 
     // Avoid the overhead of bridge calls if there's no update.
@@ -93,7 +93,7 @@ class ReactNativeFiberHostComponent {
       UIManager.updateView(
         this._nativeTag,
         this.viewConfig.uiViewClassName,
-        updatePayload
+        updatePayload,
       );
     }
   }

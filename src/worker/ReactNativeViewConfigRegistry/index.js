@@ -1,11 +1,16 @@
+const map = {
+  view: 1,
+  input: 1,
+};
+
 export function get(type) {
-  if (type === "view") {
+  if (map[type]) {
     return {
       validAttributes: {
         style: 1,
-        className: 1
+        className: 1,
       },
-      uiViewClassName: type
+      uiViewClassName: type,
     };
   }
 }
@@ -17,14 +22,14 @@ export const customDirectEventTypes = [];
 export const customBubblingEventTypes = {
   topTouchStart: {
     phasedRegistrationNames: {
-      bubbled: "onTouchStart",
-      captured: "onTouchStartCapture"
-    }
+      bubbled: 'onTouchStart',
+      captured: 'onTouchStartCapture',
+    },
   },
   topClick: {
     phasedRegistrationNames: {
-      bubbled: "onClick",
-      captured: "onClickCapture"
-    }
-  }
+      bubbled: 'onClick',
+      captured: 'onClickCapture',
+    },
+  },
 };

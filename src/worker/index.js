@@ -1,4 +1,7 @@
-import AppRegistry from "./AppRegistry";
-import "./initBridge";
+import AppRegistry from './AppRegistry';
+import { callViewMethod } from './bridge';
+import ReactNativeRender from './worker-render/';
 
-export { AppRegistry };
+const { findNodeHandle } = ReactNativeRender;
+
+export { AppRegistry, findNodeHandle, callViewMethod };

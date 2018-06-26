@@ -5,12 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import invariant from "fbjs/lib/invariant";
+import invariant from 'fbjs/lib/invariant';
 
 import {
   getInstanceFromNode,
-  getFiberCurrentPropsFromNode
-} from "./EventPluginUtils";
+  getFiberCurrentPropsFromNode,
+} from './EventPluginUtils';
 
 // Use to restore controlled state after a change event has fired.
 
@@ -21,7 +21,7 @@ const ReactControlledComponentInjection = {
     // The fiber implementation doesn't use dynamic dispatch so we need to
     // inject the implementation.
     fiberHostComponent = hostComponentImpl;
-  }
+  },
 };
 
 let restoreTarget = null;
@@ -37,15 +37,15 @@ function restoreStateOfTarget(target) {
   }
   invariant(
     fiberHostComponent &&
-      typeof fiberHostComponent.restoreControlledState === "function",
-    "Fiber needs to be injected to handle a fiber target for controlled " +
-      "events. This error is likely caused by a bug in React. Please file an issue."
+      typeof fiberHostComponent.restoreControlledState === 'function',
+    'Fiber needs to be injected to handle a fiber target for controlled ' +
+      'events. This error is likely caused by a bug in React. Please file an issue.',
   );
   const props = getFiberCurrentPropsFromNode(internalInstance.stateNode);
   fiberHostComponent.restoreControlledState(
     internalInstance.stateNode,
     internalInstance.type,
-    props
+    props,
   );
 }
 

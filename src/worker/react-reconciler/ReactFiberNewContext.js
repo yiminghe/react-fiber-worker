@@ -7,20 +7,20 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
-import type { ReactContext } from "shared/ReactTypes";
-import type { StackCursor } from "./ReactFiberStack";
+import type { Fiber } from './ReactFiber';
+import type { ReactContext } from 'shared/ReactTypes';
+import type { StackCursor } from './ReactFiberStack';
 
 export type NewContext = {
   pushProvider(providerFiber: Fiber): void,
   popProvider(providerFiber: Fiber): void,
   getContextCurrentValue(context: ReactContext<any>): any,
-  getContextChangedBits(context: ReactContext<any>): number
+  getContextChangedBits(context: ReactContext<any>): number,
 };
 
-import warning from "fbjs/lib/warning";
-import { isPrimaryRenderer } from "./ReactFiberHostConfig";
-import { createCursor, push, pop } from "./ReactFiberStack";
+import warning from 'fbjs/lib/warning';
+import { isPrimaryRenderer } from './ReactFiberHostConfig';
+import { createCursor, push, pop } from './ReactFiberStack';
 
 const providerCursor: StackCursor<Fiber | null> = createCursor(null);
 const valueCursor: StackCursor<mixed> = createCursor(null);
@@ -47,8 +47,8 @@ function pushProvider(providerFiber: Fiber): void {
         context._currentRenderer === undefined ||
           context._currentRenderer === null ||
           context._currentRenderer === rendererSigil,
-        "Detected multiple renderers concurrently rendering the " +
-          "same context provider. This is currently unsupported."
+        'Detected multiple renderers concurrently rendering the ' +
+          'same context provider. This is currently unsupported.',
       );
       context._currentRenderer = rendererSigil;
     }
@@ -64,8 +64,8 @@ function pushProvider(providerFiber: Fiber): void {
         context._currentRenderer2 === undefined ||
           context._currentRenderer2 === null ||
           context._currentRenderer2 === rendererSigil,
-        "Detected multiple renderers concurrently rendering the " +
-          "same context provider. This is currently unsupported."
+        'Detected multiple renderers concurrently rendering the ' +
+          'same context provider. This is currently unsupported.',
       );
       context._currentRenderer2 = rendererSigil;
     }
@@ -102,5 +102,5 @@ export {
   pushProvider,
   popProvider,
   getContextCurrentValue,
-  getContextChangedBits
+  getContextChangedBits,
 };

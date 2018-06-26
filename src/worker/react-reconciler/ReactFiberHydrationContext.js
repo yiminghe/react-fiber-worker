@@ -7,20 +7,20 @@
  * @flow
  */
 
-import type { Fiber } from "./ReactFiber";
+import type { Fiber } from './ReactFiber';
 import type {
   Instance,
   TextInstance,
   HydratableInstance,
   Container,
-  HostContext
-} from "./ReactFiberHostConfig";
+  HostContext,
+} from './ReactFiberHostConfig';
 
-import { HostComponent, HostText, HostRoot } from "shared/ReactTypeOfWork";
-import { Deletion, Placement } from "shared/ReactTypeOfSideEffect";
-import invariant from "fbjs/lib/invariant";
+import { HostComponent, HostText, HostRoot } from 'shared/ReactTypeOfWork';
+import { Deletion, Placement } from 'shared/ReactTypeOfSideEffect';
+import invariant from 'fbjs/lib/invariant';
 
-import { createFiberFromHostInstanceForDeletion } from "./ReactFiber";
+import { createFiberFromHostInstanceForDeletion } from './ReactFiber';
 import {
   shouldSetTextContent,
   supportsHydration,
@@ -37,8 +37,8 @@ import {
   didNotFindHydratableContainerInstance,
   didNotFindHydratableContainerTextInstance,
   didNotFindHydratableInstance,
-  didNotFindHydratableTextInstance
-} from "./ReactFiberHostConfig";
+  didNotFindHydratableTextInstance,
+} from './ReactFiberHostConfig';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.
@@ -60,14 +60,14 @@ function enterHydrationState(fiber: Fiber): boolean {
 
 function deleteHydratableInstance(
   returnFiber: Fiber,
-  instance: HydratableInstance
+  instance: HydratableInstance,
 ) {
   if (__DEV__) {
     switch (returnFiber.tag) {
       case HostRoot:
         didNotHydrateContainerInstance(
           returnFiber.stateNode.containerInfo,
-          instance
+          instance,
         );
         break;
       case HostComponent:
@@ -75,7 +75,7 @@ function deleteHydratableInstance(
           returnFiber.type,
           returnFiber.memoizedProps,
           returnFiber.stateNode,
-          instance
+          instance,
         );
         break;
     }
@@ -131,7 +131,7 @@ function insertNonHydratedInstance(returnFiber: Fiber, fiber: Fiber) {
               parentProps,
               parentInstance,
               type,
-              props
+              props,
             );
             break;
           case HostText:
@@ -140,7 +140,7 @@ function insertNonHydratedInstance(returnFiber: Fiber, fiber: Fiber) {
               parentType,
               parentProps,
               parentInstance,
-              text
+              text,
             );
             break;
         }
@@ -209,7 +209,7 @@ function tryToClaimNextHydratableInstance(fiber: Fiber): void {
     // fiber associated with it.
     deleteHydratableInstance(
       (hydrationParentFiber: any),
-      firstAttemptedInstance
+      firstAttemptedInstance,
     );
   }
   hydrationParentFiber = fiber;
@@ -219,13 +219,13 @@ function tryToClaimNextHydratableInstance(fiber: Fiber): void {
 function prepareToHydrateHostInstance(
   fiber: Fiber,
   rootContainerInstance: Container,
-  hostContext: HostContext
+  hostContext: HostContext,
 ): boolean {
   if (!supportsHydration) {
     invariant(
       false,
-      "Expected prepareToHydrateHostInstance() to never be called. " +
-        "This error is likely caused by a bug in React. Please file an issue."
+      'Expected prepareToHydrateHostInstance() to never be called. ' +
+        'This error is likely caused by a bug in React. Please file an issue.',
     );
   }
 
@@ -236,7 +236,7 @@ function prepareToHydrateHostInstance(
     fiber.memoizedProps,
     rootContainerInstance,
     hostContext,
-    fiber
+    fiber,
   );
   // TODO: Type this specific to this type of component.
   fiber.updateQueue = (updatePayload: any);
@@ -252,8 +252,8 @@ function prepareToHydrateHostTextInstance(fiber: Fiber): boolean {
   if (!supportsHydration) {
     invariant(
       false,
-      "Expected prepareToHydrateHostTextInstance() to never be called. " +
-        "This error is likely caused by a bug in React. Please file an issue."
+      'Expected prepareToHydrateHostTextInstance() to never be called. ' +
+        'This error is likely caused by a bug in React. Please file an issue.',
     );
   }
 
@@ -272,7 +272,7 @@ function prepareToHydrateHostTextInstance(fiber: Fiber): boolean {
             didNotMatchHydratedContainerTextInstance(
               parentContainer,
               textInstance,
-              textContent
+              textContent,
             );
             break;
           }
@@ -285,7 +285,7 @@ function prepareToHydrateHostTextInstance(fiber: Fiber): boolean {
               parentProps,
               parentInstance,
               textInstance,
-              textContent
+              textContent,
             );
             break;
           }
@@ -335,8 +335,8 @@ function popHydrationState(fiber: Fiber): boolean {
   // TODO: Better heuristic.
   if (
     fiber.tag !== HostComponent ||
-    (type !== "head" &&
-      type !== "body" &&
+    (type !== 'head' &&
+      type !== 'body' &&
       !shouldSetTextContent(type, fiber.memoizedProps))
   ) {
     let nextInstance = nextHydratableInstance;
@@ -369,5 +369,5 @@ export {
   tryToClaimNextHydratableInstance,
   prepareToHydrateHostInstance,
   prepareToHydrateHostTextInstance,
-  popHydrationState
+  popHydrationState,
 };

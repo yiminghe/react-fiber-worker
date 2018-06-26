@@ -8,20 +8,20 @@
  * @flow
  */
 
-"use strict";
+'use strict';
 
-import AppContainer from "./AppContainer";
-import React from "react";
-import ReactNative from "./worker-render/";
-import invariant from "fbjs/lib/invariant";
+import AppContainer from './AppContainer';
+import React from 'react';
+import ReactNative from './worker-render/';
+import invariant from 'fbjs/lib/invariant';
 
 export default function renderApplication(
   RootComponent,
   initialProps,
   rootTag,
-  WrapperComponent
+  WrapperComponent,
 ) {
-  invariant(rootTag, "Expect to have a valid rootTag, instead got ", rootTag);
+  invariant(rootTag, 'Expect to have a valid rootTag, instead got ', rootTag);
 
   let renderable = (
     <AppContainer rootTag={rootTag} WrapperComponent={WrapperComponent}>

@@ -7,8 +7,8 @@
  * @flow
  */
 
-import invariant from "fbjs/lib/invariant";
-import invokeGuardedCallback from "./invokeGuardedCallback";
+import invariant from 'fbjs/lib/invariant';
+import invokeGuardedCallback from './invokeGuardedCallback';
 
 const ReactErrorUtils = {
   // Used by Fiber to simulate a try-catch.
@@ -41,7 +41,7 @@ const ReactErrorUtils = {
     c: C,
     d: D,
     e: E,
-    f: F
+    f: F,
   ): void {
     invokeGuardedCallback.apply(ReactErrorUtils, arguments);
   },
@@ -65,7 +65,7 @@ const ReactErrorUtils = {
     c: C,
     d: D,
     e: E,
-    f: F
+    f: F,
   ): void {
     ReactErrorUtils.invokeGuardedCallback.apply(this, arguments);
     if (ReactErrorUtils.hasCaughtError()) {
@@ -98,11 +98,11 @@ const ReactErrorUtils = {
     } else {
       invariant(
         false,
-        "clearCaughtError was called but no error was captured. This error " +
-          "is likely caused by a bug in React. Please file an issue."
+        'clearCaughtError was called but no error was captured. This error ' +
+          'is likely caused by a bug in React. Please file an issue.',
       );
     }
-  }
+  },
 };
 
 let rethrowCaughtError = function() {

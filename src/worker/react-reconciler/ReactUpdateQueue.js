@@ -84,26 +84,26 @@
 // regardless of priority. Intermediate state may vary according to system
 // resources, but the final state is always the same.
 
-import type { Fiber } from "./ReactFiber";
-import type { ExpirationTime } from "./ReactFiberExpirationTime";
+import type { Fiber } from './ReactFiber';
+import type { ExpirationTime } from './ReactFiberExpirationTime';
 
-import { NoWork } from "./ReactFiberExpirationTime";
+import { NoWork } from './ReactFiberExpirationTime';
 import {
   Callback,
   ShouldCapture,
-  DidCapture
-} from "shared/ReactTypeOfSideEffect";
-import { ClassComponent } from "shared/ReactTypeOfWork";
+  DidCapture,
+} from 'shared/ReactTypeOfSideEffect';
+import { ClassComponent } from 'shared/ReactTypeOfWork';
 
 import {
   debugRenderPhaseSideEffects,
-  debugRenderPhaseSideEffectsForStrictMode
-} from "shared/ReactFeatureFlags";
+  debugRenderPhaseSideEffectsForStrictMode,
+} from 'shared/ReactFeatureFlags';
 
-import { StrictMode } from "./ReactTypeOfMode";
+import { StrictMode } from './ReactTypeOfMode';
 
-import invariant from "fbjs/lib/invariant";
-import warning from "fbjs/lib/warning";
+import invariant from 'fbjs/lib/invariant';
+import warning from 'fbjs/lib/warning';
 
 export type Update<State> = {
   expirationTime: ExpirationTime,
@@ -113,7 +113,7 @@ export type Update<State> = {
   callback: (() => mixed) | null,
 
   next: Update<State> | null,
-  nextEffect: Update<State> | null
+  nextEffect: Update<State> | null,
 };
 
 export type UpdateQueue<State> = {
@@ -130,7 +130,7 @@ export type UpdateQueue<State> = {
   lastEffect: Update<State> | null,
 
   firstCapturedEffect: Update<State> | null,
-  lastCapturedEffect: Update<State> | null
+  lastCapturedEffect: Update<State> | null,
 };
 
 export const UpdateState = 0;
@@ -165,13 +165,13 @@ export function createUpdateQueue<State>(baseState: State): UpdateQueue<State> {
     firstEffect: null,
     lastEffect: null,
     firstCapturedEffect: null,
-    lastCapturedEffect: null
+    lastCapturedEffect: null,
   };
   return queue;
 }
 
 function cloneUpdateQueue<State>(
-  currentQueue: UpdateQueue<State>
+  currentQueue: UpdateQueue<State>,
 ): UpdateQueue<State> {
   const queue: UpdateQueue<State> = {
     expirationTime: currentQueue.expirationTime,
@@ -188,7 +188,7 @@ function cloneUpdateQueue<State>(
     lastEffect: null,
 
     firstCapturedEffect: null,
-    lastCapturedEffect: null
+    lastCapturedEffect: null,
   };
   return queue;
 }
@@ -202,14 +202,14 @@ export function createUpdate(expirationTime: ExpirationTime): Update<*> {
     callback: null,
 
     next: null,
-    nextEffect: null
+    nextEffect: null,
   };
 }
 
 function appendUpdateToQueue<State>(
   queue: UpdateQueue<State>,
   update: Update<State>,
-  expirationTime: ExpirationTime
+  expirationTime: ExpirationTime,
 ) {
   // Append the update to the end of the list.
   if (queue.lastUpdate === null) {
@@ -232,7 +232,7 @@ function appendUpdateToQueue<State>(
 export function enqueueUpdate<State>(
   fiber: Fiber,
   update: Update<State>,
-  expirationTime: ExpirationTime
+  expirationTime: ExpirationTime,
 ) {
   // Update queues are created lazily.
   const alternate = fiber.alternate;
@@ -254,7 +254,7 @@ export function enqueueUpdate<State>(
         // Neither fiber has an update queue. Create new ones.
         queue1 = fiber.updateQueue = createUpdateQueue(fiber.memoizedState);
         queue2 = alternate.updateQueue = createUpdateQueue(
-          alternate.memoizedState
+          alternate.memoizedState,
         );
       } else {
         // Only one fiber has an update queue. Clone to create a new one.
@@ -298,10 +298,10 @@ export function enqueueUpdate<State>(
     ) {
       warning(
         false,
-        "An update (setState, replaceState, or forceUpdate) was scheduled " +
-          "from inside an update function. Update functions should be pure, " +
-          "with zero side-effects. Consider using componentDidUpdate or a " +
-          "callback."
+        'An update (setState, replaceState, or forceUpdate) was scheduled ' +
+          'from inside an update function. Update functions should be pure, ' +
+          'with zero side-effects. Consider using componentDidUpdate or a ' +
+          'callback.',
       );
       didWarnUpdateInsideUpdate = true;
     }
@@ -311,14 +311,14 @@ export function enqueueUpdate<State>(
 export function enqueueCapturedUpdate<State>(
   workInProgress: Fiber,
   update: Update<State>,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ) {
   // Captured updates go into a separate list, and only on the work-in-
   // progress queue.
   let workInProgressQueue = workInProgress.updateQueue;
   if (workInProgressQueue === null) {
     workInProgressQueue = workInProgress.updateQueue = createUpdateQueue(
-      workInProgress.memoizedState
+      workInProgress.memoizedState,
     );
   } else {
     // TODO: I put this here rather than createWorkInProgress so that we don't
@@ -326,7 +326,7 @@ export function enqueueCapturedUpdate<State>(
     // structure this.
     workInProgressQueue = ensureWorkInProgressQueueIsAClone(
       workInProgress,
-      workInProgressQueue
+      workInProgressQueue,
     );
   }
 
@@ -350,7 +350,7 @@ export function enqueueCapturedUpdate<State>(
 
 function ensureWorkInProgressQueueIsAClone<State>(
   workInProgress: Fiber,
-  queue: UpdateQueue<State>
+  queue: UpdateQueue<State>,
 ): UpdateQueue<State> {
   const current = workInProgress.alternate;
   if (current !== null) {
@@ -369,12 +369,12 @@ function getStateFromUpdate<State>(
   update: Update<State>,
   prevState: State,
   nextProps: any,
-  instance: any
+  instance: any,
 ): any {
   switch (update.tag) {
     case ReplaceState: {
       const payload = update.payload;
-      if (typeof payload === "function") {
+      if (typeof payload === 'function') {
         // Updater function
         if (__DEV__) {
           if (
@@ -398,7 +398,7 @@ function getStateFromUpdate<State>(
     case UpdateState: {
       const payload = update.payload;
       let partialState;
-      if (typeof payload === "function") {
+      if (typeof payload === 'function') {
         // Updater function
         if (__DEV__) {
           if (
@@ -434,7 +434,7 @@ export function processUpdateQueue<State>(
   queue: UpdateQueue<State>,
   props: any,
   instance: any,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ): void {
   hasForceUpdate = false;
 
@@ -489,7 +489,7 @@ export function processUpdateQueue<State>(
         update,
         resultState,
         props,
-        instance
+        instance,
       );
       const callback = update.callback;
       if (callback !== null) {
@@ -542,7 +542,7 @@ export function processUpdateQueue<State>(
         update,
         resultState,
         props,
-        instance
+        instance,
       );
       const callback = update.callback;
       if (callback !== null) {
@@ -588,10 +588,10 @@ export function processUpdateQueue<State>(
 
 function callCallback(callback, context) {
   invariant(
-    typeof callback === "function",
-    "Invalid argument passed as callback. Expected a function. Instead " +
-      "received: %s",
-    callback
+    typeof callback === 'function',
+    'Invalid argument passed as callback. Expected a function. Instead ' +
+      'received: %s',
+    callback,
   );
   callback.call(context);
 }
@@ -608,7 +608,7 @@ export function commitUpdateQueue<State>(
   finishedWork: Fiber,
   finishedQueue: UpdateQueue<State>,
   instance: any,
-  renderExpirationTime: ExpirationTime
+  renderExpirationTime: ExpirationTime,
 ): void {
   // If the finished render included captured updates, and there are still
   // lower priority updates left over, we need to keep the captured updates

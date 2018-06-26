@@ -1,21 +1,31 @@
-import React from "react";
-import { AppRegistry } from "../src/worker";
-import createClass from "create-react-class";
+import React from 'react';
+import { AppRegistry, callViewMethod, findNodeHandle } from '../src/worker';
+import createClass from 'create-react-class';
 
 const Simple = createClass({
   getInitialState() {
     return {
-      workerTime: new Date().toString()
+      workerTime: new Date().toString(),
     };
   },
   onTouchStart(e) {
-    console.log("receive onTouchStart", e.nativeEvent, e.currentTarget);
+    console.log('receive onTouchStart', e.nativeEvent, e.currentTarget);
+  },
+  onInnerClick(e) {
+    this.onClick(e);
+    this.setState({
+      workerTime: new Date().toString(),
+    });
+    callViewMethod({
+      reactTag: this.inputReactTag,
+      method: 'focus',
+    });
   },
   onClick(e) {
-    console.log("receive onClick", e.nativeEvent, e.currentTarget);
-    this.setState({
-      workerTime: new Date().toString()
-    });
+    console.log('receive onClick', e.nativeEvent, e.currentTarget);
+  },
+  saveInput(input) {
+    this.inputReactTag = findNodeHandle(input);
   },
   render() {
     const views = [];
@@ -31,12 +41,12 @@ const Simple = createClass({
       views.push(<view key="start">start</view>);
       views.push(workerTime, webviewTime);
       style = {
-        color: "red"
+        color: 'red',
       };
     } else {
       style = {
-        color: "green",
-        fontWeight: "bold"
+        color: 'green',
+        fontWeight: 'bold',
       };
       views.push(webviewTime, workerTime);
     }
@@ -52,14 +62,15 @@ const Simple = createClass({
         <view
           {...styleObj}
           onTouchStart={this.onTouchStart}
-          onClick={this.onClick}
+          onClick={this.onInnerClick}
         >
           click me
         </view>
+        <input ref={this.saveInput} />
         <view>{views}</view>
       </view>
     );
-  }
+  },
 });
 
-AppRegistry.registerComponent("simple", () => Simple);
+AppRegistry.registerComponent('simple', () => Simple);

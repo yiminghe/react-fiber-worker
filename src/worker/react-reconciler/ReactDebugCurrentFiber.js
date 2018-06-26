@@ -7,13 +7,13 @@
  * @flow
  */
 
-import { ReactDebugCurrentFrame } from "shared/ReactGlobalSharedState";
-import { getStackAddendumByWorkInProgressFiber } from "shared/ReactFiberComponentTreeHook";
-import getComponentName from "shared/getComponentName";
+import { ReactDebugCurrentFrame } from 'shared/ReactGlobalSharedState';
+import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
+import getComponentName from 'shared/getComponentName';
 
-import type { Fiber } from "./ReactFiber";
+import type { Fiber } from './ReactFiber';
 
-type LifeCyclePhase = "render" | "getChildContext";
+type LifeCyclePhase = 'render' | 'getChildContext';
 
 function getCurrentFiberOwnerName(): string | null {
   if (__DEV__) {
@@ -22,7 +22,7 @@ function getCurrentFiberOwnerName(): string | null {
       return null;
     }
     const owner = fiber._debugOwner;
-    if (owner !== null && typeof owner !== "undefined") {
+    if (owner !== null && typeof owner !== 'undefined') {
       return getComponentName(owner);
     }
   }
@@ -65,7 +65,7 @@ const ReactDebugCurrentFiber = {
   setCurrentFiber,
   setCurrentPhase,
   getCurrentFiberOwnerName,
-  getCurrentFiberStackAddendum
+  getCurrentFiberStackAddendum,
 };
 
 export default ReactDebugCurrentFiber;

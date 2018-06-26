@@ -7,7 +7,7 @@
  * @flow
  */
 
-import invariant from "fbjs/lib/invariant";
+import invariant from 'fbjs/lib/invariant';
 
 // Exports ReactDOM.createRoot
 export const enableUserTimingAPI = __DEV__;
@@ -44,5 +44,5 @@ export const fireGetDerivedStateFromPropsOnStateUpdates = true;
 
 // Only used in www builds.
 export function addUserTimingListener() {
-  invariant(false, "Not implemented.");
+  invariant(false, 'Not implemented.');
 }

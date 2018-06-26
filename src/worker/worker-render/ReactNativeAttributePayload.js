@@ -16,15 +16,15 @@ var deepDiffer = function(one: any, two: any, maxDepth: number = -1): boolean {
     // Short circuit on identical object references instead of traversing them.
     return false;
   }
-  if (typeof one === "function" && typeof two === "function") {
+  if (typeof one === 'function' && typeof two === 'function') {
     // We consider all functions equal
     return false;
   }
-  if (typeof one !== "object" || one === null) {
+  if (typeof one !== 'object' || one === null) {
     // Primitives can be directly compared
     return one !== two;
   }
-  if (typeof two !== "object" || two === null) {
+  if (typeof two !== 'object' || two === null) {
     // We know they are different because the previous case would have triggered
     // otherwise.
     return true;
@@ -61,7 +61,7 @@ var deepDiffer = function(one: any, two: any, maxDepth: number = -1): boolean {
 };
 
 function flattenStyle(style) {
-  if (style === null || typeof style !== "object") {
+  if (style === null || typeof style !== 'object') {
     return undefined;
   }
 
@@ -103,7 +103,7 @@ type CustomAttributeConfiguration =
 type AttributeConfiguration = {
   [key: string]:
     | CustomAttributeConfiguration
-    | AttributeConfiguration /*| boolean*/
+    | AttributeConfiguration /*| boolean*/,
 };
 
 type NestedNode = Array<NestedNode> | Object;
@@ -113,7 +113,7 @@ let removedKeys = null;
 let removedKeyCount = 0;
 
 function defaultDiffer(prevProp: mixed, nextProp: mixed): boolean {
-  if (typeof nextProp !== "object" || nextProp === null) {
+  if (typeof nextProp !== 'object' || nextProp === null) {
     // Scalars have already been checked for equality
     return true;
   } else {
@@ -125,7 +125,7 @@ function defaultDiffer(prevProp: mixed, nextProp: mixed): boolean {
 function restoreDeletedValuesInNestedArray(
   updatePayload: Object,
   node: NestedNode,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ) {
   if (Array.isArray(node)) {
     let i = node.length;
@@ -133,7 +133,7 @@ function restoreDeletedValuesInNestedArray(
       restoreDeletedValuesInNestedArray(
         updatePayload,
         node[i],
-        validAttributes
+        validAttributes,
       );
     }
   } else if (node && removedKeyCount > 0) {
@@ -152,23 +152,23 @@ function restoreDeletedValuesInNestedArray(
         continue; // not a valid native prop
       }
 
-      if (typeof nextProp === "function") {
+      if (typeof nextProp === 'function') {
         nextProp = true;
       }
-      if (typeof nextProp === "undefined") {
+      if (typeof nextProp === 'undefined') {
         nextProp = null;
       }
 
-      if (typeof attributeConfig !== "object") {
+      if (typeof attributeConfig !== 'object') {
         // case: !Object is the default case
         updatePayload[propKey] = nextProp;
       } else if (
-        typeof attributeConfig.diff === "function" ||
-        typeof attributeConfig.process === "function"
+        typeof attributeConfig.diff === 'function' ||
+        typeof attributeConfig.process === 'function'
       ) {
         // case: CustomAttributeConfiguration
         const nextValue =
-          typeof attributeConfig.process === "function"
+          typeof attributeConfig.process === 'function'
             ? attributeConfig.process(nextProp)
             : nextProp;
         updatePayload[propKey] = nextValue;
@@ -183,7 +183,7 @@ function diffNestedArrayProperty(
   updatePayload: null | Object,
   prevArray: Array<NestedNode>,
   nextArray: Array<NestedNode>,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   const minLength =
     prevArray.length < nextArray.length ? prevArray.length : nextArray.length;
@@ -195,7 +195,7 @@ function diffNestedArrayProperty(
       updatePayload,
       prevArray[i],
       nextArray[i],
-      validAttributes
+      validAttributes,
     );
   }
   for (; i < prevArray.length; i++) {
@@ -203,7 +203,7 @@ function diffNestedArrayProperty(
     updatePayload = clearNestedProperty(
       updatePayload,
       prevArray[i],
-      validAttributes
+      validAttributes,
     );
   }
   for (; i < nextArray.length; i++) {
@@ -211,7 +211,7 @@ function diffNestedArrayProperty(
     updatePayload = addNestedProperty(
       updatePayload,
       nextArray[i],
-      validAttributes
+      validAttributes,
     );
   }
   return updatePayload;
@@ -221,7 +221,7 @@ function diffNestedProperty(
   updatePayload: null | Object,
   prevProp: NestedNode,
   nextProp: NestedNode,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   if (!updatePayload && prevProp === nextProp) {
     // If no properties have been added, then we can bail out quickly on object
@@ -250,7 +250,7 @@ function diffNestedProperty(
       updatePayload,
       prevProp,
       nextProp,
-      validAttributes
+      validAttributes,
     );
   }
 
@@ -261,7 +261,7 @@ function diffNestedProperty(
       flattenStyle(prevProp),
       // $FlowFixMe - We know that this isn't an array because of above flow.
       nextProp,
-      validAttributes
+      validAttributes,
     );
   }
 
@@ -270,7 +270,7 @@ function diffNestedProperty(
     prevProp,
     // $FlowFixMe - We know that this is always an object when the input is.
     flattenStyle(nextProp),
-    validAttributes
+    validAttributes,
   );
 }
 
@@ -282,7 +282,7 @@ function diffNestedProperty(
 function addNestedProperty(
   updatePayload: null | Object,
   nextProp: NestedNode,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ) {
   if (!nextProp) {
     return updatePayload;
@@ -298,7 +298,7 @@ function addNestedProperty(
     updatePayload = addNestedProperty(
       updatePayload,
       nextProp[i],
-      validAttributes
+      validAttributes,
     );
   }
 
@@ -312,7 +312,7 @@ function addNestedProperty(
 function clearNestedProperty(
   updatePayload: null | Object,
   prevProp: NestedNode,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   if (!prevProp) {
     return updatePayload;
@@ -328,7 +328,7 @@ function clearNestedProperty(
     updatePayload = clearNestedProperty(
       updatePayload,
       prevProp[i],
-      validAttributes
+      validAttributes,
     );
   }
   return updatePayload;
@@ -344,7 +344,7 @@ function diffProperties(
   updatePayload: null | Object,
   prevProps: Object,
   nextProps: Object,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   let attributeConfig: ?(CustomAttributeConfiguration | AttributeConfiguration);
   let nextProp;
@@ -361,20 +361,20 @@ function diffProperties(
 
     // functions are converted to booleans as markers that the associated
     // events should be sent from native.
-    if (typeof nextProp === "function") {
+    if (typeof nextProp === 'function') {
       nextProp = (true: any);
       // If nextProp is not a function, then don't bother changing prevProp
       // since nextProp will win and go into the updatePayload regardless.
-      if (typeof prevProp === "function") {
+      if (typeof prevProp === 'function') {
         prevProp = (true: any);
       }
     }
 
     // An explicit value of undefined is treated as a null because it overrides
     // any other preceding value.
-    if (typeof nextProp === "undefined") {
+    if (typeof nextProp === 'undefined') {
       nextProp = (null: any);
-      if (typeof prevProp === "undefined") {
+      if (typeof prevProp === 'undefined') {
         prevProp = (null: any);
       }
     }
@@ -390,16 +390,16 @@ function diffProperties(
       // value. It doesn't matter if nothing changed, we'll set it anyway.
 
       // Pattern match on: attributeConfig
-      if (typeof attributeConfig !== "object") {
+      if (typeof attributeConfig !== 'object') {
         // case: !Object is the default case
         updatePayload[propKey] = nextProp;
       } else if (
-        typeof attributeConfig.diff === "function" ||
-        typeof attributeConfig.process === "function"
+        typeof attributeConfig.diff === 'function' ||
+        typeof attributeConfig.process === 'function'
       ) {
         // case: CustomAttributeConfiguration
         const nextValue =
-          typeof attributeConfig.process === "function"
+          typeof attributeConfig.process === 'function'
             ? attributeConfig.process(nextProp)
             : nextProp;
         updatePayload[propKey] = nextValue;
@@ -412,25 +412,25 @@ function diffProperties(
     }
 
     // Pattern match on: attributeConfig
-    if (typeof attributeConfig !== "object") {
+    if (typeof attributeConfig !== 'object') {
       // case: !Object is the default case
       if (defaultDiffer(prevProp, nextProp)) {
         // a normal leaf has changed
         (updatePayload || (updatePayload = {}))[propKey] = nextProp;
       }
     } else if (
-      typeof attributeConfig.diff === "function" ||
-      typeof attributeConfig.process === "function"
+      typeof attributeConfig.diff === 'function' ||
+      typeof attributeConfig.process === 'function'
     ) {
       // case: CustomAttributeConfiguration
       const shouldUpdate =
         prevProp === undefined ||
-        (typeof attributeConfig.diff === "function"
+        (typeof attributeConfig.diff === 'function'
           ? attributeConfig.diff(prevProp, nextProp)
           : defaultDiffer(prevProp, nextProp));
       if (shouldUpdate) {
         const nextValue =
-          typeof attributeConfig.process === "function"
+          typeof attributeConfig.process === 'function'
             ? attributeConfig.process(nextProp)
             : nextProp;
         (updatePayload || (updatePayload = {}))[propKey] = nextValue;
@@ -445,13 +445,13 @@ function diffProperties(
         updatePayload,
         prevProp,
         nextProp,
-        ((attributeConfig: any): AttributeConfiguration)
+        ((attributeConfig: any): AttributeConfiguration),
       );
       if (removedKeyCount > 0 && updatePayload) {
         restoreDeletedValuesInNestedArray(
           updatePayload,
           nextProp,
-          ((attributeConfig: any): AttributeConfiguration)
+          ((attributeConfig: any): AttributeConfiguration),
         );
         removedKeys = null;
       }
@@ -481,9 +481,9 @@ function diffProperties(
     }
     // Pattern match on: attributeConfig
     if (
-      typeof attributeConfig !== "object" ||
-      typeof attributeConfig.diff === "function" ||
-      typeof attributeConfig.process === "function"
+      typeof attributeConfig !== 'object' ||
+      typeof attributeConfig.diff === 'function' ||
+      typeof attributeConfig.process === 'function'
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
@@ -502,7 +502,7 @@ function diffProperties(
       updatePayload = clearNestedProperty(
         updatePayload,
         prevProp,
-        ((attributeConfig: any): AttributeConfiguration)
+        ((attributeConfig: any): AttributeConfiguration),
       );
     }
   }
@@ -515,7 +515,7 @@ function diffProperties(
 function addProperties(
   updatePayload: null | Object,
   props: Object,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   // TODO: Fast path
   return diffProperties(updatePayload, emptyObject, props, validAttributes);
@@ -528,7 +528,7 @@ function addProperties(
 function clearProperties(
   updatePayload: null | Object,
   prevProps: Object,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   // TODO: Fast path
   return diffProperties(updatePayload, prevProps, emptyObject, validAttributes);
@@ -536,24 +536,24 @@ function clearProperties(
 
 export function create(
   props: Object,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   return addProperties(
     null, // updatePayload
     props,
-    validAttributes
+    validAttributes,
   );
 }
 
 export function diff(
   prevProps: Object,
   nextProps: Object,
-  validAttributes: AttributeConfiguration
+  validAttributes: AttributeConfiguration,
 ): null | Object {
   return diffProperties(
     null, // updatePayload
     prevProps,
     nextProps,
-    validAttributes
+    validAttributes,
   );
 }

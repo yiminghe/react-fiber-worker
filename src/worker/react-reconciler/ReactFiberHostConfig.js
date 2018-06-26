@@ -1,1 +1,1 @@
-export * from "../worker-render/ReactNativeHostConfig";
+export * from '../worker-render/ReactNativeHostConfig';

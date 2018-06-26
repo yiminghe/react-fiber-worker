@@ -1,6 +1,7 @@
 {
   "name": "react-fiber-worker",
   "devDependencies": {
+    "pre-commit": "1.x",
     "lint-staged": "^7.2.0",
     "prettier": "^1.11.1",
     "@storybook/addon-actions": "^3.4.6",
@@ -21,14 +22,14 @@
     ]
   },
   "pre-commit": [
-    "lint-staged",
-    "lint"
+    "lint-staged"
   ],
   "dependencies": {
     "@storybook/addon-options": "^3.4.6",
     "create-react-class": "^15.6.3"
   },
   "scripts": {
+    "lint-staged": "lint-staged",
     "prettier": "prettier --write \"{src,stories}/**/*.{js,tsx}\"",
     "start": "start-storybook -p 6006",
     "build": "build-storybook",

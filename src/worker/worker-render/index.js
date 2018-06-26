@@ -1,3 +1,3 @@
-import ReactNativeRender from './ReactNativeRenderer';
+import ReactNativeRender from "./ReactNativeRenderer";
 
 export default ReactNativeRender;

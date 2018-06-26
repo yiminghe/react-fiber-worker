@@ -7,11 +7,11 @@
  * @flow
  */
 
-'use strict';
+"use strict";
 import {
   now,
   scheduleWork,
-  cancelScheduledWork,
-} from 'react-scheduler/src/ReactScheduler';
+  cancelScheduledWork
+} from "react-scheduler/src/ReactScheduler";
 
-export {now, scheduleWork, cancelScheduledWork};
+export { now, scheduleWork, cancelScheduledWork };

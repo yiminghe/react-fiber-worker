@@ -1,12 +1,12 @@
 export function get(type) {
-  if (type === 'view') {
+  if (type === "view") {
     return {
       validAttributes: {
-        style:1,
-        className:1,
+        style: 1,
+        className: 1
       },
-      uiViewClassName: type,
-    }
+      uiViewClassName: type
+    };
   }
 }
 
@@ -17,14 +17,14 @@ export const customDirectEventTypes = [];
 export const customBubblingEventTypes = {
   topTouchStart: {
     phasedRegistrationNames: {
-      bubbled: 'onTouchStart',
-      captured: 'onTouchStartCapture'
+      bubbled: "onTouchStart",
+      captured: "onTouchStartCapture"
     }
   },
   topClick: {
     phasedRegistrationNames: {
-      bubbled: 'onClick',
-      captured: 'onClickCapture'
+      bubbled: "onClick",
+      captured: "onClickCapture"
     }
-  },
+  }
 };

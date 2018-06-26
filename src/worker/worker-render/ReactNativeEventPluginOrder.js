@@ -8,8 +8,8 @@
  */
 
 const ReactNativeEventPluginOrder = [
-  'ResponderEventPlugin',
-  'ReactNativeBridgeEventPlugin',
+  "ResponderEventPlugin",
+  "ReactNativeBridgeEventPlugin"
 ];
 
 export default ReactNativeEventPluginOrder;

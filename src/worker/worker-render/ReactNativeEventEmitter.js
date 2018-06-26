@@ -7,17 +7,20 @@
  * @flow
  */
 
-import {getListener, runExtractedEventsInBatch} from '../events/EventPluginHub';
-import {registrationNameModules} from '../events/EventPluginRegistry';
-import {batchedUpdates} from '../events/ReactGenericBatching';
-import warning from 'fbjs/lib/warning';
+import {
+  getListener,
+  runExtractedEventsInBatch
+} from "../events/EventPluginHub";
+import { registrationNameModules } from "../events/EventPluginRegistry";
+import { batchedUpdates } from "../events/ReactGenericBatching";
+import warning from "fbjs/lib/warning";
 
-import {getInstanceFromNode} from './ReactNativeComponentTree';
+import { getInstanceFromNode } from "./ReactNativeComponentTree";
 
-import type {AnyNativeEvent} from '../events/PluginModuleType';
-import type {TopLevelType} from '../events/TopLevelEventTypes';
+import type { AnyNativeEvent } from "../events/PluginModuleType";
+import type { TopLevelType } from "../events/TopLevelEventTypes";
 
-export {getListener, registrationNameModules as registrationNames};
+export { getListener, registrationNameModules as registrationNames };
 
 /**
  * Version of `ReactBrowserEventEmitter` that works on the receiving side of a
@@ -55,7 +58,7 @@ const touchSubsequence = function(touches, indices) {
  */
 const removeTouchesAtIndices = function(
   touches: Array<Object>,
-  indices: Array<number>,
+  indices: Array<number>
 ): Array<Object> {
   const rippedOut = [];
   // use an unsafe downcast to alias to nullable elements,
@@ -90,7 +93,7 @@ const removeTouchesAtIndices = function(
 export function _receiveRootNodeIDEvent(
   rootNodeID: number,
   topLevelType: TopLevelType,
-  nativeEventParam: ?AnyNativeEvent,
+  nativeEventParam: ?AnyNativeEvent
 ) {
   const nativeEvent = nativeEventParam || EMPTY_NATIVE_EVENT;
   const inst = getInstanceFromNode(rootNodeID);
@@ -99,7 +102,7 @@ export function _receiveRootNodeIDEvent(
       topLevelType,
       inst,
       nativeEvent,
-      nativeEvent.target,
+      nativeEvent.target
     );
   });
   // React Native doesn't use ReactControlledComponent but if it did, here's
@@ -116,7 +119,7 @@ export function _receiveRootNodeIDEvent(
 export function receiveEvent(
   rootNodeID: number,
   topLevelType: TopLevelType,
-  nativeEventParam: AnyNativeEvent,
+  nativeEventParam: AnyNativeEvent
 ) {
   _receiveRootNodeIDEvent(rootNodeID, topLevelType, nativeEventParam);
 }
@@ -148,11 +151,11 @@ export function receiveEvent(
 export function receiveTouches(
   eventTopLevelType: TopLevelType,
   touches: Array<Object>,
-  changedIndices: Array<number>,
+  changedIndices: Array<number>
 ) {
   const changedTouches =
-    eventTopLevelType === 'topTouchEnd' ||
-    eventTopLevelType === 'topTouchCancel'
+    eventTopLevelType === "topTouchEnd" ||
+    eventTopLevelType === "topTouchCancel"
       ? removeTouchesAtIndices(touches, changedIndices)
       : touchSubsequence(touches, changedIndices);
 
@@ -170,7 +173,7 @@ export function receiveTouches(
         if (__DEV__) {
           warning(
             false,
-            'A view is reporting that a touch occurred on tag zero.',
+            "A view is reporting that a touch occurred on tag zero."
           );
         }
       } else {

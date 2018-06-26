@@ -13,20 +13,20 @@ import type {
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
   NativeMethodsMixinType,
-  ReactNativeBaseComponentViewConfig,
-} from './ReactNativeTypes';
+  ReactNativeBaseComponentViewConfig
+} from "./ReactNativeTypes";
 
-import React from 'react';
+import React from "react";
 // Modules provided by RN:
-import TextInputState from 'TextInputState';
-import UIManager from 'UIManager';
+import TextInputState from "TextInputState";
+import UIManager from "UIManager";
 
-import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
-import {mountSafeCallback} from './NativeMethodsMixinUtils';
+import * as ReactNativeAttributePayload from "./ReactNativeAttributePayload";
+import { mountSafeCallback } from "./NativeMethodsMixinUtils";
 
 export default function(
   findNodeHandle: any => ?number,
-  findHostInstance: any => any,
+  findHostInstance: any => any
 ) {
   /**
    * Superclass that provides methods to access the underlying native component.
@@ -41,7 +41,7 @@ export default function(
    */
   class ReactNativeComponent<Props, State = void> extends React.Component<
     Props,
-    State,
+    State
   > {
     /**
      * Due to bugs in Flow's handling of React.createClass, some fields already
@@ -82,7 +82,7 @@ export default function(
     measure(callback: MeasureOnSuccessCallback): void {
       UIManager.measure(
         findNodeHandle(this),
-        mountSafeCallback(this, callback),
+        mountSafeCallback(this, callback)
       );
     }
 
@@ -102,7 +102,7 @@ export default function(
     measureInWindow(callback: MeasureInWindowOnSuccessCallback): void {
       UIManager.measureInWindow(
         findNodeHandle(this),
-        mountSafeCallback(this, callback),
+        mountSafeCallback(this, callback)
       );
     }
 
@@ -115,13 +115,13 @@ export default function(
     measureLayout(
       relativeToNativeNode: number,
       onSuccess: MeasureLayoutOnSuccessCallback,
-      onFail: () => void /* currently unused */,
+      onFail: () => void /* currently unused */
     ): void {
       UIManager.measureLayout(
         findNodeHandle(this),
         relativeToNativeNode,
         mountSafeCallback(this, onFail),
-        mountSafeCallback(this, onSuccess),
+        mountSafeCallback(this, onSuccess)
       );
     }
 
@@ -158,7 +158,7 @@ export default function(
 
       const updatePayload = ReactNativeAttributePayload.create(
         nativeProps,
-        viewConfig.validAttributes,
+        viewConfig.validAttributes
       );
 
       // Avoid the overhead of bridge calls if there's no update.
@@ -168,7 +168,7 @@ export default function(
         UIManager.updateView(
           maybeInstance._nativeTag,
           viewConfig.uiViewClassName,
-          updatePayload,
+          updatePayload
         );
       }
     }

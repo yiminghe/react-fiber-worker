@@ -12,15 +12,15 @@ import type {
   TextInstance,
   Container,
   ChildSet,
-  UpdatePayload,
-} from './ReactFiberHostConfig';
-import type {Fiber} from './ReactFiber';
-import type {FiberRoot} from './ReactFiberRoot';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
-import type {CapturedValue, CapturedError} from './ReactCapturedValue';
+  UpdatePayload
+} from "./ReactFiberHostConfig";
+import type { Fiber } from "./ReactFiber";
+import type { FiberRoot } from "./ReactFiberRoot";
+import type { ExpirationTime } from "./ReactFiberExpirationTime";
+import type { CapturedValue, CapturedError } from "./ReactCapturedValue";
 
-import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {getCommitTime} from './ReactProfilerTimer';
+import { enableProfilerTimer } from "shared/ReactFeatureFlags";
+import { getCommitTime } from "./ReactProfilerTimer";
 import {
   ClassComponent,
   HostRoot,
@@ -28,24 +28,24 @@ import {
   HostText,
   HostPortal,
   Profiler,
-  TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
-import ReactErrorUtils from 'shared/ReactErrorUtils';
+  TimeoutComponent
+} from "shared/ReactTypeOfWork";
+import ReactErrorUtils from "shared/ReactErrorUtils";
 import {
   ContentReset,
   Placement,
   Snapshot,
-  Update,
-} from 'shared/ReactTypeOfSideEffect';
-import {commitUpdateQueue} from './ReactUpdateQueue';
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+  Update
+} from "shared/ReactTypeOfSideEffect";
+import { commitUpdateQueue } from "./ReactUpdateQueue";
+import invariant from "fbjs/lib/invariant";
+import warning from "fbjs/lib/warning";
 
-import {onCommitUnmount} from './ReactFiberDevToolsHook';
-import {startPhaseTimer, stopPhaseTimer} from './ReactDebugFiberPerf';
-import getComponentName from 'shared/getComponentName';
-import {getStackAddendumByWorkInProgressFiber} from 'shared/ReactFiberComponentTreeHook';
-import {logCapturedError} from './ReactFiberErrorLogger';
+import { onCommitUnmount } from "./ReactFiberDevToolsHook";
+import { startPhaseTimer, stopPhaseTimer } from "./ReactDebugFiberPerf";
+import getComponentName from "shared/getComponentName";
+import { getStackAddendumByWorkInProgressFiber } from "shared/ReactFiberComponentTreeHook";
+import { logCapturedError } from "./ReactFiberErrorLogger";
 import {
   getPublicInstance,
   supportsMutation,
@@ -61,14 +61,14 @@ import {
   removeChild,
   removeChildFromContainer,
   replaceContainerChildren,
-  createContainerChildSet,
-} from './ReactFiberHostConfig';
-import {captureCommitPhaseError} from './ReactFiberScheduler';
+  createContainerChildSet
+} from "./ReactFiberHostConfig";
+import { captureCommitPhaseError } from "./ReactFiberScheduler";
 
 const {
   invokeGuardedCallback,
   hasCaughtError,
-  clearCaughtError,
+  clearCaughtError
 } = ReactErrorUtils;
 
 let didWarnAboutUndefinedSnapshotBeforeUpdate: Set<mixed> | null = null;
@@ -85,12 +85,12 @@ export function logError(boundary: Fiber, errorInfo: CapturedValue<mixed>) {
 
   const capturedError: CapturedError = {
     componentName: source !== null ? getComponentName(source) : null,
-    componentStack: stack !== null ? stack : '',
+    componentStack: stack !== null ? stack : "",
     error: errorInfo.value,
     errorBoundary: null,
     errorBoundaryName: null,
     errorBoundaryFound: false,
-    willRetry: false,
+    willRetry: false
   };
 
   if (boundary !== null && boundary.tag === ClassComponent) {
@@ -113,7 +113,7 @@ export function logError(boundary: Fiber, errorInfo: CapturedValue<mixed>) {
 }
 
 const callComponentWillUnmountWithTimer = function(current, instance) {
-  startPhaseTimer(current, 'componentWillUnmount');
+  startPhaseTimer(current, "componentWillUnmount");
   instance.props = current.memoizedProps;
   instance.state = current.memoizedState;
   instance.componentWillUnmount();
@@ -128,7 +128,7 @@ function safelyCallComponentWillUnmount(current, instance) {
       callComponentWillUnmountWithTimer,
       null,
       current,
-      instance,
+      instance
     );
     if (hasCaughtError()) {
       const unmountError = clearCaughtError();
@@ -146,7 +146,7 @@ function safelyCallComponentWillUnmount(current, instance) {
 function safelyDetachRef(current: Fiber) {
   const ref = current.ref;
   if (ref !== null) {
-    if (typeof ref === 'function') {
+    if (typeof ref === "function") {
       if (__DEV__) {
         invokeGuardedCallback(null, ref, null, null);
         if (hasCaughtError()) {
@@ -168,7 +168,7 @@ function safelyDetachRef(current: Fiber) {
 
 function commitBeforeMutationLifeCycles(
   current: Fiber | null,
-  finishedWork: Fiber,
+  finishedWork: Fiber
 ): void {
   switch (finishedWork.tag) {
     case ClassComponent: {
@@ -176,25 +176,25 @@ function commitBeforeMutationLifeCycles(
         if (current !== null) {
           const prevProps = current.memoizedProps;
           const prevState = current.memoizedState;
-          startPhaseTimer(finishedWork, 'getSnapshotBeforeUpdate');
+          startPhaseTimer(finishedWork, "getSnapshotBeforeUpdate");
           const instance = finishedWork.stateNode;
           instance.props = finishedWork.memoizedProps;
           instance.state = finishedWork.memoizedState;
           const snapshot = instance.getSnapshotBeforeUpdate(
             prevProps,
-            prevState,
+            prevState
           );
           if (__DEV__) {
             const didWarnSet = ((didWarnAboutUndefinedSnapshotBeforeUpdate: any): Set<
-              mixed,
+              mixed
             >);
             if (snapshot === undefined && !didWarnSet.has(finishedWork.type)) {
               didWarnSet.add(finishedWork.type);
               warning(
                 false,
-                '%s.getSnapshotBeforeUpdate(): A snapshot value (or null) ' +
-                  'must be returned. You have returned undefined.',
-                getComponentName(finishedWork),
+                "%s.getSnapshotBeforeUpdate(): A snapshot value (or null) " +
+                  "must be returned. You have returned undefined.",
+                getComponentName(finishedWork)
               );
             }
           }
@@ -213,8 +213,8 @@ function commitBeforeMutationLifeCycles(
     default: {
       invariant(
         false,
-        'This unit of work tag should not have side-effects. This error is ' +
-          'likely caused by a bug in React. Please file an issue.',
+        "This unit of work tag should not have side-effects. This error is " +
+          "likely caused by a bug in React. Please file an issue."
       );
     }
   }
@@ -225,14 +225,14 @@ function commitLifeCycles(
   current: Fiber | null,
   finishedWork: Fiber,
   currentTime: ExpirationTime,
-  committedExpirationTime: ExpirationTime,
+  committedExpirationTime: ExpirationTime
 ): void {
   switch (finishedWork.tag) {
     case ClassComponent: {
       const instance = finishedWork.stateNode;
       if (finishedWork.effectTag & Update) {
         if (current === null) {
-          startPhaseTimer(finishedWork, 'componentDidMount');
+          startPhaseTimer(finishedWork, "componentDidMount");
           instance.props = finishedWork.memoizedProps;
           instance.state = finishedWork.memoizedState;
           instance.componentDidMount();
@@ -240,13 +240,13 @@ function commitLifeCycles(
         } else {
           const prevProps = current.memoizedProps;
           const prevState = current.memoizedState;
-          startPhaseTimer(finishedWork, 'componentDidUpdate');
+          startPhaseTimer(finishedWork, "componentDidUpdate");
           instance.props = finishedWork.memoizedProps;
           instance.state = finishedWork.memoizedState;
           instance.componentDidUpdate(
             prevProps,
             prevState,
-            instance.__reactInternalSnapshotBeforeUpdate,
+            instance.__reactInternalSnapshotBeforeUpdate
           );
           stopPhaseTimer();
         }
@@ -259,7 +259,7 @@ function commitLifeCycles(
           finishedWork,
           updateQueue,
           instance,
-          committedExpirationTime,
+          committedExpirationTime
         );
       }
       return;
@@ -282,7 +282,7 @@ function commitLifeCycles(
           finishedWork,
           updateQueue,
           instance,
-          committedExpirationTime,
+          committedExpirationTime
         );
       }
       return;
@@ -321,8 +321,8 @@ function commitLifeCycles(
     default: {
       invariant(
         false,
-        'This unit of work tag should not have side-effects. This error is ' +
-          'likely caused by a bug in React. Please file an issue.',
+        "This unit of work tag should not have side-effects. This error is " +
+          "likely caused by a bug in React. Please file an issue."
       );
     }
   }
@@ -340,17 +340,17 @@ function commitAttachRef(finishedWork: Fiber) {
       default:
         instanceToUse = instance;
     }
-    if (typeof ref === 'function') {
+    if (typeof ref === "function") {
       ref(instanceToUse);
     } else {
       if (__DEV__) {
-        if (!ref.hasOwnProperty('current')) {
+        if (!ref.hasOwnProperty("current")) {
           warning(
             false,
-            'Unexpected ref object provided for %s. ' +
-              'Use either a ref-setter function or React.createRef().%s',
+            "Unexpected ref object provided for %s. " +
+              "Use either a ref-setter function or React.createRef().%s",
             getComponentName(finishedWork),
-            getStackAddendumByWorkInProgressFiber(finishedWork),
+            getStackAddendumByWorkInProgressFiber(finishedWork)
           );
         }
       }
@@ -363,7 +363,7 @@ function commitAttachRef(finishedWork: Fiber) {
 function commitDetachRef(current: Fiber) {
   const currentRef = current.ref;
   if (currentRef !== null) {
-    if (typeof currentRef === 'function') {
+    if (typeof currentRef === "function") {
       currentRef(null);
     } else {
       currentRef.current = null;
@@ -375,7 +375,7 @@ function commitDetachRef(current: Fiber) {
 // deletion, so don't let them throw. Host-originating errors should
 // interrupt deletion, so it's okay
 function commitUnmount(current: Fiber): void {
-  if (typeof onCommitUnmount === 'function') {
+  if (typeof onCommitUnmount === "function") {
     onCommitUnmount(current);
   }
 
@@ -383,7 +383,7 @@ function commitUnmount(current: Fiber): void {
     case ClassComponent: {
       safelyDetachRef(current);
       const instance = current.stateNode;
-      if (typeof instance.componentWillUnmount === 'function') {
+      if (typeof instance.componentWillUnmount === "function") {
         safelyCallComponentWillUnmount(current, instance);
       }
       return;
@@ -460,9 +460,9 @@ function emptyPortalContainer(current: Fiber) {
     return;
   }
 
-  const portal: {containerInfo: Container, pendingChildren: ChildSet} =
+  const portal: { containerInfo: Container, pendingChildren: ChildSet } =
     current.stateNode;
-  const {containerInfo} = portal;
+  const { containerInfo } = portal;
   const emptyChildSet = createContainerChildSet(containerInfo);
   replaceContainerChildren(containerInfo, emptyChildSet);
 }
@@ -486,18 +486,18 @@ function commitContainer(finishedWork: Fiber) {
     case HostPortal: {
       const portalOrRoot: {
         containerInfo: Container,
-        pendingChildren: ChildSet,
+        pendingChildren: ChildSet
       } =
         finishedWork.stateNode;
-      const {containerInfo, pendingChildren} = portalOrRoot;
+      const { containerInfo, pendingChildren } = portalOrRoot;
       replaceContainerChildren(containerInfo, pendingChildren);
       return;
     }
     default: {
       invariant(
         false,
-        'This unit of work tag should not have side-effects. This error is ' +
-          'likely caused by a bug in React. Please file an issue.',
+        "This unit of work tag should not have side-effects. This error is " +
+          "likely caused by a bug in React. Please file an issue."
       );
     }
   }
@@ -513,8 +513,8 @@ function getHostParentFiber(fiber: Fiber): Fiber {
   }
   invariant(
     false,
-    'Expected to find a host parent. This error is likely caused by a bug ' +
-      'in React. Please file an issue.',
+    "Expected to find a host parent. This error is likely caused by a bug " +
+      "in React. Please file an issue."
   );
 }
 
@@ -593,8 +593,8 @@ function commitPlacement(finishedWork: Fiber): void {
     default:
       invariant(
         false,
-        'Invalid host parent fiber. This error is likely caused by a bug ' +
-          'in React. Please file an issue.',
+        "Invalid host parent fiber. This error is likely caused by a bug " +
+          "in React. Please file an issue."
       );
   }
   if (parentFiber.effectTag & ContentReset) {
@@ -663,8 +663,8 @@ function unmountHostComponents(current): void {
       findParent: while (true) {
         invariant(
           parent !== null,
-          'Expected to find a host parent. This error is likely caused by ' +
-            'a bug in React. Please file an issue.',
+          "Expected to find a host parent. This error is likely caused by " +
+            "a bug in React. Please file an issue."
         );
         switch (parent.tag) {
           case HostComponent:
@@ -775,7 +775,7 @@ function commitWork(current: Fiber | null, finishedWork: Fiber): void {
             type,
             oldProps,
             newProps,
-            finishedWork,
+            finishedWork
           );
         }
       }
@@ -784,8 +784,8 @@ function commitWork(current: Fiber | null, finishedWork: Fiber): void {
     case HostText: {
       invariant(
         finishedWork.stateNode !== null,
-        'This should have a text node initialized. This error is likely ' +
-          'caused by a bug in React. Please file an issue.',
+        "This should have a text node initialized. This error is likely " +
+          "caused by a bug in React. Please file an issue."
       );
       const textInstance: TextInstance = finishedWork.stateNode;
       const newText: string = finishedWork.memoizedProps;
@@ -805,11 +805,11 @@ function commitWork(current: Fiber | null, finishedWork: Fiber): void {
         const onRender = finishedWork.memoizedProps.onRender;
         onRender(
           finishedWork.memoizedProps.id,
-          current === null ? 'mount' : 'update',
+          current === null ? "mount" : "update",
           finishedWork.actualDuration,
           finishedWork.treeBaseTime,
           finishedWork.actualStartTime,
-          getCommitTime(),
+          getCommitTime()
         );
       }
       return;
@@ -820,8 +820,8 @@ function commitWork(current: Fiber | null, finishedWork: Fiber): void {
     default: {
       invariant(
         false,
-        'This unit of work tag should not have side-effects. This error is ' +
-          'likely caused by a bug in React. Please file an issue.',
+        "This unit of work tag should not have side-effects. This error is " +
+          "likely caused by a bug in React. Please file an issue."
       );
     }
   }
@@ -842,5 +842,5 @@ export {
   commitWork,
   commitLifeCycles,
   commitAttachRef,
-  commitDetachRef,
+  commitDetachRef
 };

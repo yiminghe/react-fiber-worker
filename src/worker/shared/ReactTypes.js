@@ -34,8 +34,8 @@ export type ReactCall<V> = {
     props: any,
     // This should be a more specific CallHandler
     handler: (props: any, returns: Array<V>) => ReactNodeList,
-    children?: ReactNodeList,
-  },
+    children?: ReactNodeList
+  }
 };
 
 export type ReactReturn<V> = {
@@ -44,8 +44,8 @@ export type ReactReturn<V> = {
   key: null,
   ref: null,
   props: {
-    value: V,
-  },
+    value: V
+  }
 };
 
 export type ReactProvider<T> = {
@@ -55,13 +55,13 @@ export type ReactProvider<T> = {
   ref: null,
   props: {
     value: T,
-    children?: ReactNodeList,
-  },
+    children?: ReactNodeList
+  }
 };
 
 export type ReactProviderType<T> = {
   $$typeof: Symbol | number,
-  _context: ReactContext<T>,
+  _context: ReactContext<T>
 };
 
 export type ReactConsumer<T> = {
@@ -71,8 +71,8 @@ export type ReactConsumer<T> = {
   ref: null,
   props: {
     children: (value: T) => ReactNodeList,
-    unstable_observedBits?: number,
-  },
+    unstable_observedBits?: number
+  }
 };
 
 export type ReactContext<T> = {
@@ -90,7 +90,7 @@ export type ReactContext<T> = {
 
   // DEV only
   _currentRenderer?: Object | null,
-  _currentRenderer2?: Object | null,
+  _currentRenderer2?: Object | null
 };
 
 export type ReactPortal = {
@@ -99,9 +99,9 @@ export type ReactPortal = {
   containerInfo: any,
   children: ReactNodeList,
   // TODO: figure out the API for cross-renderer implementation.
-  implementation: any,
+  implementation: any
 };
 
 export type RefObject = {|
-  current: any,
+  current: any
 |};

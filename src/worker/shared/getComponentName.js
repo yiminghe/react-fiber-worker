@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type {Fiber} from 'react-reconciler/src/ReactFiber';
+import type { Fiber } from "react-reconciler/src/ReactFiber";
 
 import {
   REACT_ASYNC_MODE_TYPE,
@@ -18,42 +18,42 @@ import {
   REACT_PROFILER_TYPE,
   REACT_PROVIDER_TYPE,
   REACT_STRICT_MODE_TYPE,
-  REACT_TIMEOUT_TYPE,
-} from 'shared/ReactSymbols';
+  REACT_TIMEOUT_TYPE
+} from "shared/ReactSymbols";
 
 function getComponentName(fiber: Fiber): string | null {
-  const {type} = fiber;
-  if (typeof type === 'function') {
+  const { type } = fiber;
+  if (typeof type === "function") {
     return type.displayName || type.name;
   }
-  if (typeof type === 'string') {
+  if (typeof type === "string") {
     return type;
   }
   switch (type) {
     case REACT_ASYNC_MODE_TYPE:
-      return 'AsyncMode';
+      return "AsyncMode";
     case REACT_CONTEXT_TYPE:
-      return 'Context.Consumer';
+      return "Context.Consumer";
     case REACT_FRAGMENT_TYPE:
-      return 'ReactFragment';
+      return "ReactFragment";
     case REACT_PORTAL_TYPE:
-      return 'ReactPortal';
+      return "ReactPortal";
     case REACT_PROFILER_TYPE:
       return `Profiler(${fiber.pendingProps.id})`;
     case REACT_PROVIDER_TYPE:
-      return 'Context.Provider';
+      return "Context.Provider";
     case REACT_STRICT_MODE_TYPE:
-      return 'StrictMode';
+      return "StrictMode";
     case REACT_TIMEOUT_TYPE:
-      return 'Timeout';
+      return "Timeout";
   }
-  if (typeof type === 'object' && type !== null) {
+  if (typeof type === "object" && type !== null) {
     switch (type.$$typeof) {
       case REACT_FORWARD_REF_TYPE:
-        const functionName = type.render.displayName || type.render.name || '';
-        return functionName !== ''
+        const functionName = type.render.displayName || type.render.name || "";
+        return functionName !== ""
           ? `ForwardRef(${functionName})`
-          : 'ForwardRef';
+          : "ForwardRef";
     }
   }
   return null;

@@ -7,9 +7,9 @@
  * @flow
  */
 
-import './ReactNativeInjectionShared';
+import "./ReactNativeInjectionShared";
 
-import * as ReactNativeEventEmitter from './ReactNativeEventEmitter';
+import * as ReactNativeEventEmitter from "./ReactNativeEventEmitter";
 
 // Module provided by RN:
 // import RCTEventEmitter from 'RCTEventEmitter';

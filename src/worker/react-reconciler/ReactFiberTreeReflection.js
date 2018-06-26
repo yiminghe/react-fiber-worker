@@ -7,22 +7,22 @@
  * @flow
  */
 
-import type {Fiber} from 'react-reconciler/src/ReactFiber';
+import type { Fiber } from "react-reconciler/src/ReactFiber";
 
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import invariant from "fbjs/lib/invariant";
+import warning from "fbjs/lib/warning";
 
-import * as ReactInstanceMap from 'shared/ReactInstanceMap';
-import {ReactCurrentOwner} from 'shared/ReactGlobalSharedState';
-import getComponentName from 'shared/getComponentName';
+import * as ReactInstanceMap from "shared/ReactInstanceMap";
+import { ReactCurrentOwner } from "shared/ReactGlobalSharedState";
+import getComponentName from "shared/getComponentName";
 import {
   ClassComponent,
   HostComponent,
   HostRoot,
   HostPortal,
-  HostText,
-} from 'shared/ReactTypeOfWork';
-import {NoEffect, Placement} from 'shared/ReactTypeOfSideEffect';
+  HostText
+} from "shared/ReactTypeOfWork";
+import { NoEffect, Placement } from "shared/ReactTypeOfSideEffect";
 
 const MOUNTING = 1;
 const MOUNTED = 2;
@@ -69,12 +69,12 @@ export function isMounted(component: React$Component<any, any>): boolean {
       const instance = ownerFiber.stateNode;
       warning(
         instance._warnedAboutRefsInRender,
-        '%s is accessing isMounted inside its render() function. ' +
-          'render() should be a pure function of props and state. It should ' +
-          'never access something that requires stale data from the previous ' +
-          'render, such as refs. Move this logic to componentDidMount and ' +
-          'componentDidUpdate instead.',
-        getComponentName(ownerFiber) || 'A component',
+        "%s is accessing isMounted inside its render() function. " +
+          "render() should be a pure function of props and state. It should " +
+          "never access something that requires stale data from the previous " +
+          "render, such as refs. Move this logic to componentDidMount and " +
+          "componentDidUpdate instead.",
+        getComponentName(ownerFiber) || "A component"
       );
       instance._warnedAboutRefsInRender = true;
     }
@@ -90,7 +90,7 @@ export function isMounted(component: React$Component<any, any>): boolean {
 function assertIsMounted(fiber) {
   invariant(
     isFiberMountedImpl(fiber) === MOUNTED,
-    'Unable to find node on an unmounted component.',
+    "Unable to find node on an unmounted component."
   );
 }
 
@@ -101,7 +101,7 @@ export function findCurrentFiberUsingSlowPath(fiber: Fiber): Fiber | null {
     const state = isFiberMountedImpl(fiber);
     invariant(
       state !== UNMOUNTED,
-      'Unable to find node on an unmounted component.',
+      "Unable to find node on an unmounted component."
     );
     if (state === MOUNTING) {
       return null;
@@ -141,7 +141,7 @@ export function findCurrentFiberUsingSlowPath(fiber: Fiber): Fiber | null {
       }
       // We should never have an alternate for any mounting node. So the only
       // way this could possibly happen is if this was unmounted, if at all.
-      invariant(false, 'Unable to find node on an unmounted component.');
+      invariant(false, "Unable to find node on an unmounted component.");
     }
 
     if (a.return !== b.return) {
@@ -194,8 +194,8 @@ export function findCurrentFiberUsingSlowPath(fiber: Fiber): Fiber | null {
         }
         invariant(
           didFindChild,
-          'Child was not found in either parent set. This indicates a bug ' +
-            'in React related to the return pointer. Please file an issue.',
+          "Child was not found in either parent set. This indicates a bug " +
+            "in React related to the return pointer. Please file an issue."
         );
       }
     }
@@ -203,14 +203,14 @@ export function findCurrentFiberUsingSlowPath(fiber: Fiber): Fiber | null {
     invariant(
       a.alternate === b,
       "Return fibers should always be each others' alternates. " +
-        'This error is likely caused by a bug in React. Please file an issue.',
+        "This error is likely caused by a bug in React. Please file an issue."
     );
   }
   // If the root is not a host container, we're in a disconnected tree. I.e.
   // unmounted.
   invariant(
     a.tag === HostRoot,
-    'Unable to find node on an unmounted component.',
+    "Unable to find node on an unmounted component."
   );
   if (a.stateNode.current === a) {
     // We've determined that A is the current branch.

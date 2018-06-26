@@ -7,24 +7,24 @@
  * @flow
  */
 
-import type {ReactNativeBaseComponentViewConfig} from './ReactNativeTypes';
+import type { ReactNativeBaseComponentViewConfig } from "./ReactNativeTypes";
 
-import emptyObject from 'fbjs/lib/emptyObject';
-import invariant from 'fbjs/lib/invariant';
+import emptyObject from "fbjs/lib/emptyObject";
+import invariant from "fbjs/lib/invariant";
 
 // Modules provided by RN:
-import UIManager from 'UIManager';
+import UIManager from "UIManager";
 // import deepFreezeAndThrowOnMutationInDev from 'deepFreezeAndThrowOnMutationInDev';
 
-import * as ReactNativeViewConfigRegistry from 'ReactNativeViewConfigRegistry';
-import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
+import * as ReactNativeViewConfigRegistry from "ReactNativeViewConfigRegistry";
+import * as ReactNativeAttributePayload from "./ReactNativeAttributePayload";
 import {
   precacheFiberNode,
   uncacheFiberNode,
-  updateFiberProps,
-} from './ReactNativeComponentTree';
-import ReactNativeFiberHostComponent from './ReactNativeFiberHostComponent';
-import * as ReactNativeFrameScheduling from './ReactNativeFrameScheduling';
+  updateFiberProps
+} from "./ReactNativeComponentTree";
+import ReactNativeFiberHostComponent from "./ReactNativeFiberHostComponent";
+import * as ReactNativeFrameScheduling from "./ReactNativeFrameScheduling";
 
 export type Type = string;
 export type Props = Object;
@@ -32,13 +32,13 @@ export type Container = number;
 export type Instance = {
   _children: Array<Instance | number>,
   _nativeTag: number,
-  viewConfig: ReactNativeBaseComponentViewConfig,
+  viewConfig: ReactNativeBaseComponentViewConfig
 };
 export type TextInstance = number;
 export type HydratableInstance = Instance | TextInstance;
 export type PublicInstance = Instance;
 export type HostContext = $ReadOnly<{|
-  isInAParentText: boolean,
+  isInAParentText: boolean
 |}>;
 export type UpdatePayload = Object; // Unused
 export type ChildSet = void; // Unused
@@ -57,7 +57,7 @@ function allocateTag() {
 }
 
 function recursivelyUncacheFiberNode(node: Instance | TextInstance) {
-  if (typeof node === 'number') {
+  if (typeof node === "number") {
     // Leaf node (eg text)
     uncacheFiberNode(node);
   } else {
@@ -67,12 +67,12 @@ function recursivelyUncacheFiberNode(node: Instance | TextInstance) {
   }
 }
 
-export * from 'shared/HostConfigWithNoPersistence';
-export * from 'shared/HostConfigWithNoHydration';
+export * from "shared/HostConfigWithNoPersistence";
+export * from "shared/HostConfigWithNoHydration";
 
 export function appendInitialChild(
   parentInstance: Instance,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
   parentInstance._children.push(child);
 }
@@ -82,7 +82,7 @@ export function createInstance(
   props: Props,
   rootContainerInstance: Container,
   hostContext: HostContext,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): Instance {
   const tag = allocateTag();
   const viewConfig = ReactNativeViewConfigRegistry.get(type);
@@ -97,14 +97,14 @@ export function createInstance(
 
   const updatePayload = ReactNativeAttributePayload.create(
     props,
-    viewConfig.validAttributes,
+    viewConfig.validAttributes
   );
 
   UIManager.createView(
     tag, // reactTag
     viewConfig.uiViewClassName, // viewName
     rootContainerInstance, // rootTag
-    updatePayload, // props
+    updatePayload // props
   );
 
   const component = new ReactNativeFiberHostComponent(tag, viewConfig);
@@ -121,15 +121,15 @@ export function createTextInstance(
   text: string,
   rootContainerInstance: Container,
   hostContext: HostContext,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): TextInstance {
   const tag = allocateTag();
 
   UIManager.createView(
     tag, // reactTag
-    'rawText', // viewName
+    "rawText", // viewName
     rootContainerInstance, // rootTag
-    {text: text}, // props
+    { text: text } // props
   );
 
   precacheFiberNode(internalInstanceHandle, tag);
@@ -142,7 +142,7 @@ export function finalizeInitialChildren(
   type: string,
   props: Props,
   rootContainerInstance: Container,
-  hostContext: HostContext,
+  hostContext: HostContext
 ): boolean {
   // Don't send a no-op message over the bridge.
   if (parentInstance._children.length === 0) {
@@ -153,31 +153,28 @@ export function finalizeInitialChildren(
   // Either way we need to pass a copy of the Array to prevent it from being frozen.
   const nativeTags = parentInstance._children.map(
     child =>
-      typeof child === 'number'
+      typeof child === "number"
         ? child // Leaf node (eg text)
-        : child._nativeTag,
+        : child._nativeTag
   );
 
   UIManager.setChildren(
     parentInstance._nativeTag, // containerTag
-    nativeTags, // reactTags
+    nativeTags // reactTags
   );
 
   return false;
 }
 
 export function getRootHostContext(
-  rootContainerInstance: Container,
-): HostContext {
-}
+  rootContainerInstance: Container
+): HostContext {}
 
 export function getChildHostContext(
   parentHostContext: HostContext,
   type: string,
-  rootContainerInstance: Container,
-): HostContext {
-
-}
+  rootContainerInstance: Container
+): HostContext {}
 
 export function getPublicInstance(instance: Instance): * {
   return instance;
@@ -193,7 +190,7 @@ export function prepareUpdate(
   oldProps: Props,
   newProps: Props,
   rootContainerInstance: Container,
-  hostContext: HostContext,
+  hostContext: HostContext
 ): null | Object {
   return emptyObject;
 }
@@ -231,9 +228,9 @@ export const supportsMutation = true;
 
 export function appendChild(
   parentInstance: Instance,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
-  const childTag = typeof child === 'number' ? child : child._nativeTag;
+  const childTag = typeof child === "number" ? child : child._nativeTag;
   const children = parentInstance._children;
   const index = children.indexOf(child);
 
@@ -247,7 +244,7 @@ export function appendChild(
       [children.length - 1], // moveToIndices
       [], // addChildReactTags
       [], // addAtIndices
-      [], // removeAtIndices
+      [] // removeAtIndices
     );
   } else {
     children.push(child);
@@ -258,31 +255,31 @@ export function appendChild(
       [], // moveToIndices
       [childTag], // addChildReactTags
       [children.length - 1], // addAtIndices
-      [], // removeAtIndices
+      [] // removeAtIndices
     );
   }
 }
 
 export function appendChildToContainer(
   parentInstance: Container,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
-  const childTag = typeof child === 'number' ? child : child._nativeTag;
+  const childTag = typeof child === "number" ? child : child._nativeTag;
   UIManager.setChildren(
     parentInstance, // containerTag
-    [childTag], // reactTags
+    [childTag] // reactTags
   );
 }
 
 export function commitTextUpdate(
   textInstance: TextInstance,
   oldText: string,
-  newText: string,
+  newText: string
 ): void {
   UIManager.updateView(
     textInstance, // reactTag
-    'rawText', // viewName
-    {text: newText}, // props
+    "rawText", // viewName
+    { text: newText } // props
   );
 }
 
@@ -290,7 +287,7 @@ export function commitMount(
   instance: Instance,
   type: string,
   newProps: Props,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   // Noop
 }
@@ -301,7 +298,7 @@ export function commitUpdate(
   type: string,
   oldProps: Props,
   newProps: Props,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   const viewConfig = instance.viewConfig;
 
@@ -310,7 +307,7 @@ export function commitUpdate(
   const updatePayload = ReactNativeAttributePayload.diff(
     oldProps,
     newProps,
-    viewConfig.validAttributes,
+    viewConfig.validAttributes
   );
 
   // Avoid the overhead of bridge calls if there's no update.
@@ -320,7 +317,7 @@ export function commitUpdate(
     UIManager.updateView(
       instance._nativeTag, // reactTag
       viewConfig.uiViewClassName, // viewName
-      updatePayload, // props
+      updatePayload // props
     );
   }
 }
@@ -328,7 +325,7 @@ export function commitUpdate(
 export function insertBefore(
   parentInstance: Instance,
   child: Instance | TextInstance,
-  beforeChild: Instance | TextInstance,
+  beforeChild: Instance | TextInstance
 ): void {
   const children = (parentInstance: any)._children;
   const index = children.indexOf(child);
@@ -345,13 +342,13 @@ export function insertBefore(
       [beforeChildIndex], // moveToIndices
       [], // addChildReactTags
       [], // addAtIndices
-      [], // removeAtIndices
+      [] // removeAtIndices
     );
   } else {
     const beforeChildIndex = children.indexOf(beforeChild);
     children.splice(beforeChildIndex, 0, child);
 
-    const childTag = typeof child === 'number' ? child : child._nativeTag;
+    const childTag = typeof child === "number" ? child : child._nativeTag;
 
     UIManager.manageChildren(
       (parentInstance: any)._nativeTag, // containerID
@@ -359,7 +356,7 @@ export function insertBefore(
       [], // moveToIndices
       [childTag], // addChildReactTags
       [beforeChildIndex], // addAtIndices
-      [], // removeAtIndices
+      [] // removeAtIndices
     );
   }
 }
@@ -367,21 +364,21 @@ export function insertBefore(
 export function insertInContainerBefore(
   parentInstance: Container,
   child: Instance | TextInstance,
-  beforeChild: Instance | TextInstance,
+  beforeChild: Instance | TextInstance
 ): void {
   // TODO (bvaughn): Remove this check when...
   // We create a wrapper object for the container in ReactNative render()
   // Or we refactor to remove wrapper objects entirely.
   // For more info on pros/cons see PR #8560 description.
   invariant(
-    typeof parentInstance !== 'number',
-    'Container does not support insertBefore operation',
+    typeof parentInstance !== "number",
+    "Container does not support insertBefore operation"
   );
 }
 
 export function removeChild(
   parentInstance: Instance,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
   recursivelyUncacheFiberNode(child);
   const children = parentInstance._children;
@@ -395,13 +392,13 @@ export function removeChild(
     [], // moveToIndices
     [], // addChildReactTags
     [], // addAtIndices
-    [index], // removeAtIndices
+    [index] // removeAtIndices
   );
 }
 
 export function removeChildFromContainer(
   parentInstance: Container,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
   recursivelyUncacheFiberNode(child);
   UIManager.manageChildren(
@@ -410,7 +407,7 @@ export function removeChildFromContainer(
     [], // moveToIndices
     [], // addChildReactTags
     [], // addAtIndices
-    [0], // removeAtIndices
+    [0] // removeAtIndices
   );
 }
 

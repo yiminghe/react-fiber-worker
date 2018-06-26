@@ -7,7 +7,7 @@
  * @flow
  */
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from "fbjs/lib/invariant";
 
 let invokeGuardedCallback = function<A, B, C, D, E, F, Context>(
   name: string | null,
@@ -18,7 +18,7 @@ let invokeGuardedCallback = function<A, B, C, D, E, F, Context>(
   c: C,
   d: D,
   e: E,
-  f: F,
+  f: F
 ) {
   this._hasCaughtError = false;
   this._caughtError = null;
@@ -54,12 +54,12 @@ if (__DEV__) {
   // Check that the browser supports the APIs we need to implement our special
   // DEV version of invokeGuardedCallback
   if (
-    typeof window !== 'undefined' &&
-    typeof window.dispatchEvent === 'function' &&
-    typeof document !== 'undefined' &&
-    typeof document.createEvent === 'function'
+    typeof window !== "undefined" &&
+    typeof window.dispatchEvent === "function" &&
+    typeof document !== "undefined" &&
+    typeof document.createEvent === "function"
   ) {
-    const fakeNode = document.createElement('react');
+    const fakeNode = document.createElement("react");
 
     const invokeGuardedCallbackDev = function<A, B, C, D, E, F, Context>(
       name: string | null,
@@ -70,23 +70,23 @@ if (__DEV__) {
       c: C,
       d: D,
       e: E,
-      f: F,
+      f: F
     ) {
       // If document doesn't exist we know for sure we will crash in this method
       // when we call document.createEvent(). However this can cause confusing
       // errors: https://github.com/facebookincubator/create-react-app/issues/3482
       // So we preemptively throw with a better message instead.
       invariant(
-        typeof document !== 'undefined',
-        'The `document` global was defined when React was initialized, but is not ' +
-          'defined anymore. This can happen in a test environment if a component ' +
-          'schedules an update from an asynchronous callback, but the test has already ' +
-          'finished running. To solve this, you can either unmount the component at ' +
-          'the end of your test (and ensure that any asynchronous operations get ' +
-          'canceled in `componentWillUnmount`), or you can change the test itself ' +
-          'to be asynchronous.',
+        typeof document !== "undefined",
+        "The `document` global was defined when React was initialized, but is not " +
+          "defined anymore. This can happen in a test environment if a component " +
+          "schedules an update from an asynchronous callback, but the test has already " +
+          "finished running. To solve this, you can either unmount the component at " +
+          "the end of your test (and ensure that any asynchronous operations get " +
+          "canceled in `componentWillUnmount`), or you can change the test itself " +
+          "to be asynchronous."
       );
-      const evt = document.createEvent('Event');
+      const evt = document.createEvent("Event");
 
       // Keeps track of whether the user-provided callback threw an error. We
       // set this to true at the beginning, then set it to false right after
@@ -135,10 +135,10 @@ if (__DEV__) {
       }
 
       // Create a fake event type.
-      const evtType = `react-${name ? name : 'invokeguardedcallback'}`;
+      const evtType = `react-${name ? name : "invokeguardedcallback"}`;
 
       // Attach our event handlers
-      window.addEventListener('error', onError);
+      window.addEventListener("error", onError);
       fakeNode.addEventListener(evtType, callCallback, false);
 
       // Synchronously dispatch our fake event. If the user-provided function
@@ -150,20 +150,20 @@ if (__DEV__) {
         if (!didSetError) {
           // The callback errored, but the error event never fired.
           error = new Error(
-            'An error was thrown inside one of your components, but React ' +
+            "An error was thrown inside one of your components, but React " +
               "doesn't know what it was. This is likely due to browser " +
               'flakiness. React does its best to preserve the "Pause on ' +
               'exceptions" behavior of the DevTools, which requires some ' +
               "DEV-mode only tricks. It's possible that these don't work in " +
-              'your browser. Try triggering the error in production mode, ' +
-              'or switching to a modern browser. If you suspect that this is ' +
-              'actually an issue with React, please file an issue.',
+              "your browser. Try triggering the error in production mode, " +
+              "or switching to a modern browser. If you suspect that this is " +
+              "actually an issue with React, please file an issue."
           );
         } else if (isCrossOriginError) {
           error = new Error(
             "A cross-origin error was thrown. React doesn't have access to " +
-              'the actual error object in development. ' +
-              'See https://fb.me/react-crossorigin-error for more information.',
+              "the actual error object in development. " +
+              "See https://fb.me/react-crossorigin-error for more information."
           );
         }
         this._hasCaughtError = true;
@@ -174,7 +174,7 @@ if (__DEV__) {
       }
 
       // Remove our event listeners
-      window.removeEventListener('error', onError);
+      window.removeEventListener("error", onError);
     };
 
     invokeGuardedCallback = invokeGuardedCallbackDev;

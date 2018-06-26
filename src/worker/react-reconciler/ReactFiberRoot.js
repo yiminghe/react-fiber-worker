@@ -7,18 +7,18 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
+import type { Fiber } from "./ReactFiber";
+import type { ExpirationTime } from "./ReactFiberExpirationTime";
 
-import {createHostRootFiber} from './ReactFiber';
-import {NoWork} from './ReactFiberExpirationTime';
+import { createHostRootFiber } from "./ReactFiber";
+import { NoWork } from "./ReactFiberExpirationTime";
 
 // TODO: This should be lifted into the renderer.
 export type Batch = {
   _defer: boolean,
   _expirationTime: ExpirationTime,
   _onComplete: () => mixed,
-  _next: Batch | null,
+  _next: Batch | null
 };
 
 export type FiberRoot = {
@@ -63,13 +63,13 @@ export type FiberRoot = {
   // TODO: Lift this into the renderer
   firstBatch: Batch | null,
   // Linked-list of roots
-  nextScheduledRoot: FiberRoot | null,
+  nextScheduledRoot: FiberRoot | null
 };
 
 export function createFiberRoot(
   containerInfo: any,
   isAsync: boolean,
-  hydrate: boolean,
+  hydrate: boolean
 ): FiberRoot {
   // Cyclic construction. This cheats the type system right now because
   // stateNode is any.
@@ -92,7 +92,7 @@ export function createFiberRoot(
     hydrate,
     remainingExpirationTime: NoWork,
     firstBatch: null,
-    nextScheduledRoot: null,
+    nextScheduledRoot: null
   };
   uninitializedFiber.stateNode = root;
   return root;

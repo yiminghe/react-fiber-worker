@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import {HostComponent} from './ReactTypeOfWork';
+import { HostComponent } from "./ReactTypeOfWork";
 
 function getParent(inst) {
   do {
@@ -91,10 +91,10 @@ export function traverseTwoPhase(inst, fn, arg) {
   }
   let i;
   for (i = path.length; i-- > 0; ) {
-    fn(path[i], 'captured', arg);
+    fn(path[i], "captured", arg);
   }
   for (i = 0; i < path.length; i++) {
-    fn(path[i], 'bubbled', arg);
+    fn(path[i], "bubbled", arg);
   }
 }
 
@@ -138,9 +138,9 @@ export function traverseEnterLeave(from, to, fn, argFrom, argTo) {
     to = getParent(to);
   }
   for (let i = 0; i < pathFrom.length; i++) {
-    fn(pathFrom[i], 'bubbled', argFrom);
+    fn(pathFrom[i], "bubbled", argFrom);
   }
   for (let i = pathTo.length; i-- > 0; ) {
-    fn(pathTo[i], 'captured', argTo);
+    fn(pathTo[i], "captured", argTo);
   }
 }

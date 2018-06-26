@@ -1,14 +1,14 @@
-import { viewRegistry } from './registry';
+import { viewRegistry } from "./registry";
 
 const tagMap = {
-  view: 'div',
-  text: 'span'
+  view: "div",
+  text: "span"
 };
 
 function toStyleString(o) {
-  let s = '';
+  let s = "";
   Object.keys(o).forEach(k_ => {
-    const k = k_.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+    const k = k_.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
     s += `${k}:${o[k_]};`;
   });
   return s;
@@ -16,18 +16,18 @@ function toStyleString(o) {
 
 export function createView(tag, viewClass, rootTag, props) {
   let node;
-  if (viewClass === 'rawText') {
+  if (viewClass === "rawText") {
     node = document.createTextNode(props.text);
   } else {
-    node = document.createElement(tagMap[viewClass] || 'div');
+    node = document.createElement(tagMap[viewClass] || "div");
     if (props) {
-      Object.keys(props).forEach((k) => {
+      Object.keys(props).forEach(k => {
         let value = props[k];
         if (!value) {
           node.removeAttribute(k);
           return;
         }
-        if (k === 'style') {
+        if (k === "style") {
           value = toStyleString(value);
         }
         node.setAttribute(k, value);
@@ -36,7 +36,7 @@ export function createView(tag, viewClass, rootTag, props) {
   }
   // for test
   if (node.setAttribute) {
-    node.setAttribute('data-reactTag', tag);
+    node.setAttribute("data-reactTag", tag);
   }
   node.reactTag = tag;
   viewRegistry[tag] = node;
@@ -44,25 +44,25 @@ export function createView(tag, viewClass, rootTag, props) {
 
 export function setChildren(parentTag, tags) {
   const parent = viewRegistry[parentTag];
-  const children = tags.map((t) => viewRegistry[t]);
-  children.forEach((c) => {
+  const children = tags.map(t => viewRegistry[t]);
+  children.forEach(c => {
     parent.appendChild(c);
   });
 }
 
 export function updateView(tag, viewClass, props) {
   let node = viewRegistry[tag];
-  if (viewClass === 'rawText') {
+  if (viewClass === "rawText") {
     node.nodeValue = props.text;
   } else {
     if (props) {
-      Object.keys(props).forEach((k) => {
+      Object.keys(props).forEach(k => {
         let value = props[k];
         if (!value) {
           node.removeAttribute(k);
           return;
         }
-        if (k === 'style') {
+        if (k === "style") {
           value = toStyleString(value);
         }
         node.setAttribute(k, value);
@@ -71,12 +71,14 @@ export function updateView(tag, viewClass, props) {
   }
 }
 
-export function manageChildren(containerTag,
-                               moveFromIndices,
-                               moveToIndices,
-                               addChildReactTags,
-                               addAtIndices,
-                               removeAtIndices) {
+export function manageChildren(
+  containerTag,
+  moveFromIndices,
+  moveToIndices,
+  addChildReactTags,
+  addAtIndices,
+  removeAtIndices
+) {
   const container = viewRegistry[containerTag];
   const childNodes = container.childNodes;
   if (moveFromIndices.length) {

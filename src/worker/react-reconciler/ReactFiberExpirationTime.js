@@ -7,7 +7,7 @@
  * @flow
  */
 
-import MAX_SIGNED_31_BIT_INT from './maxSigned31BitInt';
+import MAX_SIGNED_31_BIT_INT from "./maxSigned31BitInt";
 
 // TODO: Use an opaque type once ESLint et al support the syntax
 export type ExpirationTime = number;
@@ -36,13 +36,13 @@ function ceiling(num: number, precision: number): number {
 export function computeExpirationBucket(
   currentTime: ExpirationTime,
   expirationInMs: number,
-  bucketSizeMs: number,
+  bucketSizeMs: number
 ): ExpirationTime {
   return (
     MAGIC_NUMBER_OFFSET +
     ceiling(
       currentTime - MAGIC_NUMBER_OFFSET + expirationInMs / UNIT_SIZE,
-      bucketSizeMs / UNIT_SIZE,
+      bucketSizeMs / UNIT_SIZE
     )
   );
 }

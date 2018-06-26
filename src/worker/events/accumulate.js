@@ -7,7 +7,7 @@
  * @flow
  */
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from "fbjs/lib/invariant";
 
 /**
  * Accumulates items that must not be null or undefined.
@@ -18,11 +18,11 @@ import invariant from 'fbjs/lib/invariant';
  */
 function accumulate<T>(
   current: ?(T | Array<T>),
-  next: T | Array<T>,
+  next: T | Array<T>
 ): T | Array<T> {
   invariant(
     next != null,
-    'accumulate(...): Accumulated items must be not be null or undefined.',
+    "accumulate(...): Accumulated items must be not be null or undefined."
   );
 
   if (current == null) {

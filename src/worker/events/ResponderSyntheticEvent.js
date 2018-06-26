@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import SyntheticEvent from './SyntheticEvent';
+import SyntheticEvent from "./SyntheticEvent";
 
 /**
  * `touchHistory` isn't actually on the native event, but putting it in the
@@ -15,7 +15,7 @@ import SyntheticEvent from './SyntheticEvent';
 const ResponderSyntheticEvent = SyntheticEvent.extend({
   touchHistory: function(nativeEvent) {
     return null; // Actually doesn't even look at the native event.
-  },
+  }
 });
 
 export default ResponderSyntheticEvent;

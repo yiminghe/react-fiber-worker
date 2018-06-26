@@ -7,12 +7,12 @@
  * @flow
  */
 
-export const TOP_TOUCH_START = 'topTouchStart';
-export const TOP_TOUCH_MOVE = 'topTouchMove';
-export const TOP_TOUCH_END = 'topTouchEnd';
-export const TOP_TOUCH_CANCEL = 'topTouchCancel';
-export const TOP_SCROLL = 'topScroll';
-export const TOP_SELECTION_CHANGE = 'topSelectionChange';
+export const TOP_TOUCH_START = "topTouchStart";
+export const TOP_TOUCH_MOVE = "topTouchMove";
+export const TOP_TOUCH_END = "topTouchEnd";
+export const TOP_TOUCH_CANCEL = "topTouchCancel";
+export const TOP_SCROLL = "topScroll";
+export const TOP_SELECTION_CHANGE = "topSelectionChange";
 
 export function isStartish(topLevelType: mixed): boolean {
   return topLevelType === TOP_TOUCH_START;

@@ -7,7 +7,7 @@
  * @flow
  */
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from "fbjs/lib/invariant";
 
 // Renderers that don't support mutation
 // can re-export everything from this module.
@@ -15,9 +15,9 @@ import invariant from 'fbjs/lib/invariant';
 function shim(...args: any) {
   invariant(
     false,
-    'The current renderer does not support mutation. ' +
-      'This error is likely caused by a bug in React. ' +
-      'Please file an issue.',
+    "The current renderer does not support mutation. " +
+      "This error is likely caused by a bug in React. " +
+      "Please file an issue."
   );
 }
 

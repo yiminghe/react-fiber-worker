@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import ReactErrorUtils from 'shared/ReactErrorUtils';
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import ReactErrorUtils from "shared/ReactErrorUtils";
+import invariant from "fbjs/lib/invariant";
+import warning from "fbjs/lib/warning";
 
 export let getFiberCurrentPropsFromNode = null;
 export let getInstanceFromNode = null;
@@ -18,16 +18,16 @@ export const injection = {
     ({
       getFiberCurrentPropsFromNode,
       getInstanceFromNode,
-      getNodeFromInstance,
+      getNodeFromInstance
     } = Injected);
     if (__DEV__) {
       warning(
         getNodeFromInstance && getInstanceFromNode,
-        'EventPluginUtils.injection.injectComponentTree(...): Injected ' +
-          'module is missing getNodeFromInstance or getInstanceFromNode.',
+        "EventPluginUtils.injection.injectComponentTree(...): Injected " +
+          "module is missing getNodeFromInstance or getInstanceFromNode."
       );
     }
-  },
+  }
 };
 
 let validateEventDispatches;
@@ -39,16 +39,20 @@ if (__DEV__) {
     const listenersIsArr = Array.isArray(dispatchListeners);
     const listenersLen = listenersIsArr
       ? dispatchListeners.length
-      : dispatchListeners ? 1 : 0;
+      : dispatchListeners
+        ? 1
+        : 0;
 
     const instancesIsArr = Array.isArray(dispatchInstances);
     const instancesLen = instancesIsArr
       ? dispatchInstances.length
-      : dispatchInstances ? 1 : 0;
+      : dispatchInstances
+        ? 1
+        : 0;
 
     warning(
       instancesIsArr === listenersIsArr && instancesLen === listenersLen,
-      'EventPluginUtils: Invalid `event`.',
+      "EventPluginUtils: Invalid `event`."
     );
   };
 }
@@ -61,13 +65,13 @@ if (__DEV__) {
  * @param {*} inst Internal component instance
  */
 function executeDispatch(event, simulated, listener, inst) {
-  const type = event.type || 'unknown-event';
+  const type = event.type || "unknown-event";
   event.currentTarget = getNodeFromInstance(inst);
   ReactErrorUtils.invokeGuardedCallbackAndCatchFirstError(
     type,
     listener,
     undefined,
-    event,
+    event
   );
   event.currentTarget = null;
 }
@@ -91,7 +95,7 @@ export function executeDispatchesInOrder(event, simulated) {
         event,
         simulated,
         dispatchListeners[i],
-        dispatchInstances[i],
+        dispatchInstances[i]
       );
     }
   } else if (dispatchListeners) {
@@ -159,7 +163,7 @@ export function executeDirectDispatch(event) {
   const dispatchInstance = event._dispatchInstances;
   invariant(
     !Array.isArray(dispatchListener),
-    'executeDirectDispatch(...): Invalid `event`.',
+    "executeDirectDispatch(...): Invalid `event`."
   );
   event.currentTarget = dispatchListener
     ? getNodeFromInstance(dispatchInstance)

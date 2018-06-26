@@ -1,34 +1,29 @@
-import React from 'react';
-import { AppRegistry } from '../src/worker';
-import createClass from 'create-react-class';
-
+import React from "react";
+import { AppRegistry } from "../src/worker";
+import createClass from "create-react-class";
 
 const Simple = createClass({
   getInitialState() {
     return {
-      workerTime: new Date().toString(),
+      workerTime: new Date().toString()
     };
   },
   onTouchStart(e) {
-    console.log('receive onTouchStart', e.nativeEvent, e.currentTarget);
+    console.log("receive onTouchStart", e.nativeEvent, e.currentTarget);
   },
   onClick(e) {
-    console.log('receive onClick', e.nativeEvent, e.currentTarget);
+    console.log("receive onClick", e.nativeEvent, e.currentTarget);
     this.setState({
-      workerTime: new Date().toString(),
+      workerTime: new Date().toString()
     });
   },
   render() {
     const views = [];
     const workerTime = (
-      <view key="worker">
-        worker time: {this.state.workerTime}
-      </view>
+      <view key="worker">worker time: {this.state.workerTime}</view>
     );
     const webviewTime = (
-      <view key="webview">
-        webview time: {this.props.time}
-      </view>
+      <view key="webview">webview time: {this.props.time}</view>
     );
     const r = Math.random();
     let style;
@@ -36,12 +31,12 @@ const Simple = createClass({
       views.push(<view key="start">start</view>);
       views.push(workerTime, webviewTime);
       style = {
-        color: 'red',
+        color: "red"
       };
     } else {
       style = {
-        color: 'green',
-        fontWeight: 'bold',
+        color: "green",
+        fontWeight: "bold"
       };
       views.push(webviewTime, workerTime);
     }
@@ -61,12 +56,10 @@ const Simple = createClass({
         >
           click me
         </view>
-        <view>
-          {views}
-        </view>
+        <view>{views}</view>
       </view>
     );
   }
 });
 
-AppRegistry.registerComponent('simple', () => Simple);
+AppRegistry.registerComponent("simple", () => Simple);

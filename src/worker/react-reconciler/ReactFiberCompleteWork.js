@@ -7,9 +7,9 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
-import type {FiberRoot} from './ReactFiberRoot';
+import type { Fiber } from "./ReactFiber";
+import type { ExpirationTime } from "./ReactFiberExpirationTime";
+import type { FiberRoot } from "./ReactFiberRoot";
 import type {
   Instance,
   Type,
@@ -17,10 +17,10 @@ import type {
   UpdatePayload,
   Container,
   ChildSet,
-  HostContext,
-} from './ReactFiberHostConfig';
+  HostContext
+} from "./ReactFiberHostConfig";
 
-import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
+import { enableProfilerTimer } from "shared/ReactFeatureFlags";
 import {
   IndeterminateComponent,
   FunctionalComponent,
@@ -35,11 +35,11 @@ import {
   Fragment,
   Mode,
   Profiler,
-  TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
-import {Placement, Ref, Update} from 'shared/ReactTypeOfSideEffect';
-import {ProfileMode} from './ReactTypeOfMode';
-import invariant from 'fbjs/lib/invariant';
+  TimeoutComponent
+} from "shared/ReactTypeOfWork";
+import { Placement, Ref, Update } from "shared/ReactTypeOfSideEffect";
+import { ProfileMode } from "./ReactTypeOfMode";
+import invariant from "fbjs/lib/invariant";
 
 import {
   createInstance,
@@ -52,25 +52,25 @@ import {
   cloneInstance,
   createContainerChildSet,
   appendChildToContainerChildSet,
-  finalizeContainerChildren,
-} from './ReactFiberHostConfig';
+  finalizeContainerChildren
+} from "./ReactFiberHostConfig";
 import {
   getRootHostContainer,
   popHostContext,
   getHostContext,
-  popHostContainer,
-} from './ReactFiberHostContext';
-import {recordElapsedActualRenderTime} from './ReactProfilerTimer';
+  popHostContainer
+} from "./ReactFiberHostContext";
+import { recordElapsedActualRenderTime } from "./ReactProfilerTimer";
 import {
   popContextProvider as popLegacyContextProvider,
-  popTopLevelContextObject as popTopLevelLegacyContextObject,
-} from './ReactFiberContext';
-import {popProvider} from './ReactFiberNewContext';
+  popTopLevelContextObject as popTopLevelLegacyContextObject
+} from "./ReactFiberContext";
+import { popProvider } from "./ReactFiberNewContext";
 import {
   prepareToHydrateHostInstance,
   prepareToHydrateHostTextInstance,
-  popHydrationState,
-} from './ReactFiberHydrationContext';
+  popHydrationState
+} from "./ReactFiberHydrationContext";
 
 function markUpdate(workInProgress: Fiber) {
   // Tag the fiber with an update effect. This turns a Placement into
@@ -129,7 +129,7 @@ if (supportsMutation) {
     oldProps: Props,
     newProps: Props,
     rootContainerInstance: Container,
-    currentHostContext: HostContext,
+    currentHostContext: HostContext
   ) {
     // TODO: Type this specific to this type of component.
     workInProgress.updateQueue = (updatePayload: any);
@@ -143,7 +143,7 @@ if (supportsMutation) {
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
-    newText: string,
+    newText: string
   ) {
     // If the text differs, mark it as an update. All the work in done in commitWork.
     if (oldText !== newText) {
@@ -156,7 +156,7 @@ if (supportsMutation) {
   // An unfortunate fork of appendAllChildren because we have two different parent types.
   const appendAllChildrenToContainer = function(
     containerChildSet: ChildSet,
-    workInProgress: Fiber,
+    workInProgress: Fiber
   ) {
     // We only have the top Fiber that was created but we need recurse down its
     // children to find all the terminal nodes.
@@ -189,7 +189,7 @@ if (supportsMutation) {
   updateHostContainer = function(workInProgress: Fiber) {
     const portalOrRoot: {
       containerInfo: Container,
-      pendingChildren: ChildSet,
+      pendingChildren: ChildSet
     } =
       workInProgress.stateNode;
     const childrenUnchanged = workInProgress.firstEffect === null;
@@ -214,7 +214,7 @@ if (supportsMutation) {
     oldProps: Props,
     newProps: Props,
     rootContainerInstance: Container,
-    currentHostContext: HostContext,
+    currentHostContext: HostContext
   ) {
     // If there are no effects associated with this node, then none of our children had any updates.
     // This guarantees that we can reuse all of them.
@@ -234,7 +234,7 @@ if (supportsMutation) {
         newProps,
         workInProgress,
         childrenUnchanged,
-        recyclableInstance,
+        recyclableInstance
       );
       if (
         finalizeInitialChildren(
@@ -242,7 +242,7 @@ if (supportsMutation) {
           type,
           newProps,
           rootContainerInstance,
-          currentHostContext,
+          currentHostContext
         )
       ) {
         markUpdate(workInProgress);
@@ -263,7 +263,7 @@ if (supportsMutation) {
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
-    newText: string,
+    newText: string
   ) {
     if (oldText !== newText) {
       // If the text content differs, we'll create a new text instance for it.
@@ -273,7 +273,7 @@ if (supportsMutation) {
         newText,
         rootContainerInstance,
         currentHostContext,
-        workInProgress,
+        workInProgress
       );
       // We'll have to mark it as having an effect, even though we won't use the effect for anything.
       // This lets the parents know that at least one of their children has changed.
@@ -293,7 +293,7 @@ if (supportsMutation) {
     oldProps: Props,
     newProps: Props,
     rootContainerInstance: Container,
-    currentHostContext: HostContext,
+    currentHostContext: HostContext
   ) {
     // Noop
   };
@@ -301,7 +301,7 @@ if (supportsMutation) {
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
-    newText: string,
+    newText: string
   ) {
     // Noop
   };
@@ -310,7 +310,7 @@ if (supportsMutation) {
 function completeWork(
   current: Fiber | null,
   workInProgress: Fiber,
-  renderExpirationTime: ExpirationTime,
+  renderExpirationTime: ExpirationTime
 ): Fiber | null {
   const newProps = workInProgress.pendingProps;
 
@@ -370,7 +370,7 @@ function completeWork(
           oldProps,
           newProps,
           rootContainerInstance,
-          currentHostContext,
+          currentHostContext
         );
 
         updateHostComponent(
@@ -381,7 +381,7 @@ function completeWork(
           oldProps,
           newProps,
           rootContainerInstance,
-          currentHostContext,
+          currentHostContext
         );
 
         if (current.ref !== workInProgress.ref) {
@@ -391,8 +391,8 @@ function completeWork(
         if (!newProps) {
           invariant(
             workInProgress.stateNode !== null,
-            'We must have new props for new mounts. This error is likely ' +
-              'caused by a bug in React. Please file an issue.',
+            "We must have new props for new mounts. This error is likely " +
+              "caused by a bug in React. Please file an issue."
           );
           // This can happen when we abort work.
           return null;
@@ -411,7 +411,7 @@ function completeWork(
             prepareToHydrateHostInstance(
               workInProgress,
               rootContainerInstance,
-              currentHostContext,
+              currentHostContext
             )
           ) {
             // If changes to the hydrated node needs to be applied at the
@@ -424,7 +424,7 @@ function completeWork(
             newProps,
             rootContainerInstance,
             currentHostContext,
-            workInProgress,
+            workInProgress
           );
 
           appendAllChildren(instance, workInProgress);
@@ -438,7 +438,7 @@ function completeWork(
               type,
               newProps,
               rootContainerInstance,
-              currentHostContext,
+              currentHostContext
             )
           ) {
             markUpdate(workInProgress);
@@ -461,11 +461,11 @@ function completeWork(
         // to schedule a side-effect to do the updates.
         updateHostText(current, workInProgress, oldText, newText);
       } else {
-        if (typeof newText !== 'string') {
+        if (typeof newText !== "string") {
           invariant(
             workInProgress.stateNode !== null,
-            'We must have new props for new mounts. This error is likely ' +
-              'caused by a bug in React. Please file an issue.',
+            "We must have new props for new mounts. This error is likely " +
+              "caused by a bug in React. Please file an issue."
           );
           // This can happen when we abort work.
           return null;
@@ -482,7 +482,7 @@ function completeWork(
             newText,
             rootContainerInstance,
             currentHostContext,
-            workInProgress,
+            workInProgress
           );
         }
       }
@@ -512,18 +512,18 @@ function completeWork(
     case IndeterminateComponent:
       invariant(
         false,
-        'An indeterminate component should have become determinate before ' +
-          'completing. This error is likely caused by a bug in React. Please ' +
-          'file an issue.',
+        "An indeterminate component should have become determinate before " +
+          "completing. This error is likely caused by a bug in React. Please " +
+          "file an issue."
       );
     // eslint-disable-next-line no-fallthrough
     default:
       invariant(
         false,
-        'Unknown unit of work tag. This error is likely caused by a bug in ' +
-          'React. Please file an issue.',
+        "Unknown unit of work tag. This error is likely caused by a bug in " +
+          "React. Please file an issue."
       );
   }
 }
 
-export {completeWork};
+export { completeWork };

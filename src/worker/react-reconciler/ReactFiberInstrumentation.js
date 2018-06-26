@@ -12,7 +12,7 @@
 // This is not part of the public API, not even for React DevTools.
 // You may only inject a debugTool if you work on React Fiber itself.
 const ReactFiberInstrumentation = {
-  debugTool: null,
+  debugTool: null
 };
 
 module.exports = ReactFiberInstrumentation;

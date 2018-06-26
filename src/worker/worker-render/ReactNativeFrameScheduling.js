@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type {Deadline} from 'react-reconciler/src/ReactFiberScheduler';
+import type { Deadline } from "react-reconciler/src/ReactFiberScheduler";
 
 const hasNativePerformanceNow =
-  typeof performance === 'object' && typeof performance.now === 'function';
+  typeof performance === "object" && typeof performance.now === "function";
 
 const now = hasNativePerformanceNow
   ? () => performance.now()
@@ -23,7 +23,7 @@ let frameDeadline: number = 0;
 
 const frameDeadlineObject: Deadline = {
   timeRemaining: () => frameDeadline - now(),
-  didTimeout: false,
+  didTimeout: false
 };
 
 function setTimeoutCallback() {
@@ -45,7 +45,7 @@ function setTimeoutCallback() {
 // We also don't implement cancel functionality b'c Fiber doesn't currently need it.
 function scheduleDeferredCallback(
   callback: Callback,
-  options?: {timeout: number},
+  options?: { timeout: number }
 ): number {
   // We assume only one callback is scheduled at a time b'c that's how Fiber works.
   scheduledCallback = callback;
@@ -58,4 +58,4 @@ function cancelDeferredCallback(callbackID: number) {
   clearTimeout((callbackID: any)); // Timeouts are always numbers on RN
 }
 
-export {now, scheduleDeferredCallback, cancelDeferredCallback};
+export { now, scheduleDeferredCallback, cancelDeferredCallback };

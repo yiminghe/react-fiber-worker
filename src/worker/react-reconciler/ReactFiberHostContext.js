@@ -7,33 +7,36 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {StackCursor} from './ReactFiberStack';
-import type {Container, HostContext} from './ReactFiberHostConfig';
+import type { Fiber } from "./ReactFiber";
+import type { StackCursor } from "./ReactFiberStack";
+import type { Container, HostContext } from "./ReactFiberHostConfig";
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from "fbjs/lib/invariant";
 
-import {getChildHostContext, getRootHostContext} from './ReactFiberHostConfig';
-import {createCursor, push, pop} from './ReactFiberStack';
+import {
+  getChildHostContext,
+  getRootHostContext
+} from "./ReactFiberHostConfig";
+import { createCursor, push, pop } from "./ReactFiberStack";
 
 declare class NoContextT {}
 const NO_CONTEXT: NoContextT = ({}: any);
 
 let contextStackCursor: StackCursor<HostContext | NoContextT> = createCursor(
-  NO_CONTEXT,
+  NO_CONTEXT
 );
 let contextFiberStackCursor: StackCursor<Fiber | NoContextT> = createCursor(
-  NO_CONTEXT,
+  NO_CONTEXT
 );
 let rootInstanceStackCursor: StackCursor<Container | NoContextT> = createCursor(
-  NO_CONTEXT,
+  NO_CONTEXT
 );
 
 function requiredContext<Value>(c: Value | NoContextT): Value {
   invariant(
     c !== NO_CONTEXT,
-    'Expected host context to exist. This error is likely caused by a bug ' +
-      'in React. Please file an issue.',
+    "Expected host context to exist. This error is likely caused by a bug " +
+      "in React. Please file an issue."
   );
   return (c: any);
 }
@@ -76,7 +79,7 @@ function getHostContext(): HostContext {
 
 function pushHostContext(fiber: Fiber): void {
   const rootInstance: Container = requiredContext(
-    rootInstanceStackCursor.current,
+    rootInstanceStackCursor.current
   );
   const context: HostContext = requiredContext(contextStackCursor.current);
   const nextContext = getChildHostContext(context, fiber.type, rootInstance);
@@ -109,5 +112,5 @@ export {
   popHostContainer,
   popHostContext,
   pushHostContainer,
-  pushHostContext,
+  pushHostContext
 };

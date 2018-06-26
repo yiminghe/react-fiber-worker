@@ -1,6 +1,4 @@
-import AppRegistry from './AppRegistry';
-import './initBridge';
+import AppRegistry from "./AppRegistry";
+import "./initBridge";
 
-export {
-  AppRegistry
-};
+export { AppRegistry };

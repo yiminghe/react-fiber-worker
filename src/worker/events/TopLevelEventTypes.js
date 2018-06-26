@@ -8,15 +8,15 @@
  */
 
 export type RNTopLevelEventType =
-  | 'topMouseDown'
-  | 'topMouseMove'
-  | 'topMouseUp'
-  | 'topScroll'
-  | 'topSelectionChange'
-  | 'topTouchCancel'
-  | 'topTouchEnd'
-  | 'topTouchMove'
-  | 'topTouchStart';
+  | "topMouseDown"
+  | "topMouseMove"
+  | "topMouseUp"
+  | "topScroll"
+  | "topSelectionChange"
+  | "topTouchCancel"
+  | "topTouchEnd"
+  | "topTouchMove"
+  | "topTouchStart";
 
 export opaque type DOMTopLevelEventType = string;
 
@@ -25,13 +25,13 @@ export opaque type DOMTopLevelEventType = string;
 // (It is the only module that is allowed to access these methods.)
 
 export function unsafeCastStringToDOMTopLevelType(
-  topLevelType: string,
+  topLevelType: string
 ): DOMTopLevelEventType {
   return topLevelType;
 }
 
 export function unsafeCastDOMTopLevelTypeToString(
-  topLevelType: DOMTopLevelEventType,
+  topLevelType: DOMTopLevelEventType
 ): string {
   return topLevelType;
 }

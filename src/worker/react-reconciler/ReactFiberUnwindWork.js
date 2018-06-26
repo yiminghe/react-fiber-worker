@@ -7,12 +7,12 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {FiberRoot} from './ReactFiberRoot';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
-import type {CapturedValue} from './ReactCapturedValue';
-import type {Update} from './ReactUpdateQueue';
-import type {Thenable} from './ReactFiberScheduler';
+import type { Fiber } from "./ReactFiber";
+import type { FiberRoot } from "./ReactFiberRoot";
+import type { ExpirationTime } from "./ReactFiberExpirationTime";
+import type { CapturedValue } from "./ReactCapturedValue";
+import type { Update } from "./ReactUpdateQueue";
+import type { Thenable } from "./ReactFiberScheduler";
 
 import {
   ClassComponent,
@@ -20,40 +20,40 @@ import {
   HostComponent,
   HostPortal,
   ContextProvider,
-  TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
+  TimeoutComponent
+} from "shared/ReactTypeOfWork";
 import {
   DidCapture,
   Incomplete,
   NoEffect,
-  ShouldCapture,
-} from 'shared/ReactTypeOfSideEffect';
+  ShouldCapture
+} from "shared/ReactTypeOfSideEffect";
 import {
   enableGetDerivedStateFromCatch,
   enableProfilerTimer,
-  enableSuspense,
-} from 'shared/ReactFeatureFlags';
-import {ProfileMode} from './ReactTypeOfMode';
+  enableSuspense
+} from "shared/ReactFeatureFlags";
+import { ProfileMode } from "./ReactTypeOfMode";
 
-import {createCapturedValue} from './ReactCapturedValue';
+import { createCapturedValue } from "./ReactCapturedValue";
 import {
   enqueueCapturedUpdate,
   createUpdate,
   enqueueUpdate,
-  CaptureUpdate,
-} from './ReactUpdateQueue';
-import {logError} from './ReactFiberCommitWork';
-import {Never, Sync, expirationTimeToMs} from './ReactFiberExpirationTime';
-import {popHostContainer, popHostContext} from './ReactFiberHostContext';
+  CaptureUpdate
+} from "./ReactUpdateQueue";
+import { logError } from "./ReactFiberCommitWork";
+import { Never, Sync, expirationTimeToMs } from "./ReactFiberExpirationTime";
+import { popHostContainer, popHostContext } from "./ReactFiberHostContext";
 import {
   popContextProvider as popLegacyContextProvider,
-  popTopLevelContextObject as popTopLevelLegacyContextObject,
-} from './ReactFiberContext';
-import {popProvider} from './ReactFiberNewContext';
+  popTopLevelContextObject as popTopLevelLegacyContextObject
+} from "./ReactFiberContext";
+import { popProvider } from "./ReactFiberNewContext";
 import {
   resumeActualRenderTimerIfPaused,
-  recordElapsedActualRenderTime,
-} from './ReactProfilerTimer';
+  recordElapsedActualRenderTime
+} from "./ReactProfilerTimer";
 import {
   suspendRoot,
   onUncaughtError,
@@ -62,20 +62,20 @@ import {
   recalculateCurrentTime,
   computeExpirationForFiber,
   scheduleWork,
-  retrySuspendedRoot,
-} from './ReactFiberScheduler';
+  retrySuspendedRoot
+} from "./ReactFiberScheduler";
 
 function createRootErrorUpdate(
   fiber: Fiber,
   errorInfo: CapturedValue<mixed>,
-  expirationTime: ExpirationTime,
+  expirationTime: ExpirationTime
 ): Update<null> {
   const update = createUpdate(expirationTime);
   // Unmount the root by rendering null.
   update.tag = CaptureUpdate;
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = {element: null};
+  update.payload = { element: null };
   const error = errorInfo.value;
   update.callback = () => {
     onUncaughtError(error);
@@ -87,14 +87,14 @@ function createRootErrorUpdate(
 function createClassErrorUpdate(
   fiber: Fiber,
   errorInfo: CapturedValue<mixed>,
-  expirationTime: ExpirationTime,
+  expirationTime: ExpirationTime
 ): Update<mixed> {
   const update = createUpdate(expirationTime);
   update.tag = CaptureUpdate;
   const getDerivedStateFromCatch = fiber.type.getDerivedStateFromCatch;
   if (
     enableGetDerivedStateFromCatch &&
-    typeof getDerivedStateFromCatch === 'function'
+    typeof getDerivedStateFromCatch === "function"
   ) {
     const error = errorInfo.value;
     update.payload = () => {
@@ -103,11 +103,11 @@ function createClassErrorUpdate(
   }
 
   const inst = fiber.stateNode;
-  if (inst !== null && typeof inst.componentDidCatch === 'function') {
+  if (inst !== null && typeof inst.componentDidCatch === "function") {
     update.callback = function callback() {
       if (
         !enableGetDerivedStateFromCatch ||
-        getDerivedStateFromCatch !== 'function'
+        getDerivedStateFromCatch !== "function"
       ) {
         // To preserve the preexisting retry behavior of error boundaries,
         // we keep track of which ones already failed during this batch.
@@ -120,7 +120,7 @@ function createClassErrorUpdate(
       const stack = errorInfo.stack;
       logError(fiber, errorInfo);
       this.componentDidCatch(error, {
-        componentStack: stack !== null ? stack : '',
+        componentStack: stack !== null ? stack : ""
       });
     };
   }
@@ -144,7 +144,7 @@ function throwException(
   value: mixed,
   renderIsExpired: boolean,
   renderExpirationTime: ExpirationTime,
-  currentTimeMs: number,
+  currentTimeMs: number
 ) {
   // The source fiber did not complete.
   sourceFiber.effectTag |= Incomplete;
@@ -154,8 +154,8 @@ function throwException(
   if (
     enableSuspense &&
     value !== null &&
-    typeof value === 'object' &&
-    typeof value.then === 'function'
+    typeof value === "object" &&
+    typeof value.then === "function"
   ) {
     // This is a thenable.
     const thenable: Thenable = (value: any);
@@ -184,7 +184,7 @@ function throwException(
           break searchForEarliestTimeout;
         }
         let timeoutPropMs = workInProgress.pendingProps.ms;
-        if (typeof timeoutPropMs === 'number') {
+        if (typeof timeoutPropMs === "number") {
           if (timeoutPropMs <= 0) {
             earliestTimeoutMs = 0;
             break searchForEarliestTimeout;
@@ -223,10 +223,10 @@ function throwException(
             // helpful error.
             const message =
               renderExpirationTime === Sync
-                ? 'A synchronous update was suspended, but no fallback UI ' +
-                  'was provided.'
-                : 'An update was suspended for longer than the timeout, ' +
-                  'but no fallback UI was provided.';
+                ? "A synchronous update was suspended, but no fallback UI " +
+                  "was provided."
+                : "An update was suspended for longer than the timeout, " +
+                  "but no fallback UI was provided.";
             value = new Error(message);
             break;
           }
@@ -260,7 +260,7 @@ function throwException(
         const update = createRootErrorUpdate(
           workInProgress,
           errorInfo,
-          renderExpirationTime,
+          renderExpirationTime
         );
         enqueueCapturedUpdate(workInProgress, update, renderExpirationTime);
         return;
@@ -272,10 +272,10 @@ function throwException(
         const instance = workInProgress.stateNode;
         if (
           (workInProgress.effectTag & DidCapture) === NoEffect &&
-          ((typeof ctor.getDerivedStateFromCatch === 'function' &&
+          ((typeof ctor.getDerivedStateFromCatch === "function" &&
             enableGetDerivedStateFromCatch) ||
             (instance !== null &&
-              typeof instance.componentDidCatch === 'function' &&
+              typeof instance.componentDidCatch === "function" &&
               !isAlreadyFailedLegacyErrorBoundary(instance)))
         ) {
           workInProgress.effectTag |= ShouldCapture;
@@ -283,7 +283,7 @@ function throwException(
           const update = createClassErrorUpdate(
             workInProgress,
             errorInfo,
-            renderExpirationTime,
+            renderExpirationTime
           );
           enqueueCapturedUpdate(workInProgress, update, renderExpirationTime);
           return;
@@ -299,7 +299,7 @@ function throwException(
 function unwindWork(
   workInProgress: Fiber,
   renderIsExpired: boolean,
-  renderExpirationTime: ExpirationTime,
+  renderExpirationTime: ExpirationTime
 ) {
   if (enableProfilerTimer) {
     if (workInProgress.mode & ProfileMode) {
@@ -389,5 +389,5 @@ export {
   unwindWork,
   unwindInterruptedWork,
   createRootErrorUpdate,
-  createClassErrorUpdate,
+  createClassErrorUpdate
 };

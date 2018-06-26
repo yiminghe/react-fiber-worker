@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {FiberRoot} from './ReactFiberRoot';
+import type { Fiber } from "./ReactFiber";
+import type { FiberRoot } from "./ReactFiberRoot";
 
-import warning from 'fbjs/lib/warning';
+import warning from "fbjs/lib/warning";
 
 declare var __REACT_DEVTOOLS_GLOBAL_HOOK__: Object | void;
 
@@ -25,14 +25,14 @@ function catchErrors(fn) {
     } catch (err) {
       if (__DEV__ && !hasLoggedError) {
         hasLoggedError = true;
-        warning(false, 'React DevTools encountered an error: %s', err);
+        warning(false, "React DevTools encountered an error: %s", err);
       }
     }
   };
 }
 
 export function injectInternals(internals: Object): boolean {
-  if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === 'undefined') {
+  if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === "undefined") {
     // No DevTools
     return false;
   }
@@ -47,9 +47,9 @@ export function injectInternals(internals: Object): boolean {
     if (__DEV__) {
       warning(
         false,
-        'The installed version of React DevTools is too old and will not work ' +
-          'with the current version of React. Please update React DevTools. ' +
-          'https://fb.me/react-devtools',
+        "The installed version of React DevTools is too old and will not work " +
+          "with the current version of React. Please update React DevTools. " +
+          "https://fb.me/react-devtools"
       );
     }
     // DevTools exists, even though it doesn't support Fiber.
@@ -59,15 +59,15 @@ export function injectInternals(internals: Object): boolean {
     const rendererID = hook.inject(internals);
     // We have successfully injected, so now it is safe to set up hooks.
     onCommitFiberRoot = catchErrors(root =>
-      hook.onCommitFiberRoot(rendererID, root),
+      hook.onCommitFiberRoot(rendererID, root)
     );
     onCommitFiberUnmount = catchErrors(fiber =>
-      hook.onCommitFiberUnmount(rendererID, fiber),
+      hook.onCommitFiberUnmount(rendererID, fiber)
     );
   } catch (err) {
     // Catch all errors because it is unsafe to throw during initialization.
     if (__DEV__) {
-      warning(false, 'React DevTools encountered an error: %s.', err);
+      warning(false, "React DevTools encountered an error: %s.", err);
     }
   }
   // DevTools exists
@@ -75,13 +75,13 @@ export function injectInternals(internals: Object): boolean {
 }
 
 export function onCommitRoot(root: FiberRoot) {
-  if (typeof onCommitFiberRoot === 'function') {
+  if (typeof onCommitFiberRoot === "function") {
     onCommitFiberRoot(root);
   }
 }
 
 export function onCommitUnmount(fiber: Fiber) {
-  if (typeof onCommitFiberUnmount === 'function') {
+  if (typeof onCommitFiberUnmount === "function") {
     onCommitFiberUnmount(fiber);
   }
 }

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from "fbjs/lib/invariant";
 
 const instanceCache = {};
 const instanceProps = {};
@@ -20,7 +20,7 @@ export function uncacheFiberNode(tag) {
 }
 
 function getInstanceFromTag(tag) {
-  if (typeof tag === 'number') {
+  if (typeof tag === "number") {
     return instanceCache[tag] || null;
   } else {
     // Fabric will invoke event emitters on a direct fiber reference
@@ -33,14 +33,14 @@ function getTagFromInstance(inst) {
   if (tag === undefined) {
     tag = inst.stateNode.canonical._nativeTag;
   }
-  invariant(tag, 'All native instances should have a tag.');
+  invariant(tag, "All native instances should have a tag.");
   return tag;
 }
 
 export {
   getInstanceFromTag as getClosestInstanceFromNode,
   getInstanceFromTag as getInstanceFromNode,
-  getTagFromInstance as getNodeFromInstance,
+  getTagFromInstance as getNodeFromInstance
 };
 
 export function getFiberCurrentPropsFromNode(stateNode) {

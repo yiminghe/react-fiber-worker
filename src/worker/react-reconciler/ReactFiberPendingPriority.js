@@ -7,18 +7,18 @@
  * @flow
  */
 
-import type {FiberRoot} from './ReactFiberRoot';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
+import type { FiberRoot } from "./ReactFiberRoot";
+import type { ExpirationTime } from "./ReactFiberExpirationTime";
 
-import {NoWork} from './ReactFiberExpirationTime';
+import { NoWork } from "./ReactFiberExpirationTime";
 
-import {enableSuspense} from 'shared/ReactFeatureFlags';
+import { enableSuspense } from "shared/ReactFeatureFlags";
 
 // TODO: Offscreen updates
 
 export function markPendingPriorityLevel(
   root: FiberRoot,
-  expirationTime: ExpirationTime,
+  expirationTime: ExpirationTime
 ): void {
   if (enableSuspense) {
     // Update the latest and earliest pending times
@@ -44,7 +44,7 @@ export function markPendingPriorityLevel(
 export function markCommittedPriorityLevels(
   root: FiberRoot,
   currentTime: ExpirationTime,
-  earliestRemainingTime: ExpirationTime,
+  earliestRemainingTime: ExpirationTime
 ): void {
   if (enableSuspense) {
     if (earliestRemainingTime === NoWork) {
@@ -113,7 +113,7 @@ export function markCommittedPriorityLevels(
 
 export function markSuspendedPriorityLevel(
   root: FiberRoot,
-  suspendedTime: ExpirationTime,
+  suspendedTime: ExpirationTime
 ): void {
   if (enableSuspense) {
     // First, check the known pending levels and update them if needed.
@@ -160,7 +160,7 @@ export function markSuspendedPriorityLevel(
 
 export function markPingedPriorityLevel(
   root: FiberRoot,
-  pingedTime: ExpirationTime,
+  pingedTime: ExpirationTime
 ): void {
   if (enableSuspense) {
     const latestSuspendedTime = root.latestSuspendedTime;

@@ -7,28 +7,28 @@
  * @flow
  */
 
-import type { ReactNativeType } from './ReactNativeTypes';
-import type { ReactNodeList } from 'shared/ReactTypes';
+import type { ReactNativeType } from "./ReactNativeTypes";
+import type { ReactNodeList } from "shared/ReactTypes";
 
-import './ReactNativeInjection';
+import "./ReactNativeInjection";
 
-import * as ReactNativeFiberRenderer from 'react-reconciler/ReactFiberReconciler';
-import * as ReactPortal from 'shared/ReactPortal';
-import * as ReactGenericBatching from '../events/ReactGenericBatching';
-import ReactVersion from 'shared/ReactVersion';
+import * as ReactNativeFiberRenderer from "react-reconciler/ReactFiberReconciler";
+import * as ReactPortal from "shared/ReactPortal";
+import * as ReactGenericBatching from "../events/ReactGenericBatching";
+import ReactVersion from "shared/ReactVersion";
 // Module provided by RN:
-import UIManager from 'UIManager';
+import UIManager from "UIManager";
 
-import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
+import { getStackAddendumByWorkInProgressFiber } from "shared/ReactFiberComponentTreeHook";
 
-import NativeMethodsMixin from './NativeMethodsMixin';
-import ReactNativeComponent from './ReactNativeComponent';
-import * as ReactNativeComponentTree from './ReactNativeComponentTree';
-import { getInspectorDataForViewTag } from './ReactNativeFiberInspector';
+import NativeMethodsMixin from "./NativeMethodsMixin";
+import ReactNativeComponent from "./ReactNativeComponent";
+import * as ReactNativeComponentTree from "./ReactNativeComponentTree";
+import { getInspectorDataForViewTag } from "./ReactNativeFiberInspector";
 
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
-import getComponentName from 'shared/getComponentName';
-import warning from 'fbjs/lib/warning';
+import { ReactCurrentOwner } from "shared/ReactGlobalSharedState";
+import getComponentName from "shared/getComponentName";
+import warning from "fbjs/lib/warning";
 
 const findHostInstance = ReactNativeFiberRenderer.findHostInstance;
 
@@ -38,12 +38,12 @@ function findNodeHandle(componentOrHandle: any): ?number {
     if (owner !== null && owner.stateNode !== null) {
       warning(
         owner.stateNode._warnedAboutRefsInRender,
-        '%s is accessing findNodeHandle inside its render(). ' +
-        'render() should be a pure function of props and state. It should ' +
-        'never access something that requires stale data from the previous ' +
-        'render, such as refs. Move this logic to componentDidMount and ' +
-        'componentDidUpdate instead.',
-        getComponentName(owner) || 'A component',
+        "%s is accessing findNodeHandle inside its render(). " +
+          "render() should be a pure function of props and state. It should " +
+          "never access something that requires stale data from the previous " +
+          "render, such as refs. Move this logic to componentDidMount and " +
+          "componentDidUpdate instead.",
+        getComponentName(owner) || "A component"
       );
 
       owner.stateNode._warnedAboutRefsInRender = true;
@@ -52,7 +52,7 @@ function findNodeHandle(componentOrHandle: any): ?number {
   if (componentOrHandle == null) {
     return null;
   }
-  if (typeof componentOrHandle === 'number') {
+  if (typeof componentOrHandle === "number") {
     // Already a node handle
     return componentOrHandle;
   }
@@ -66,14 +66,9 @@ function findNodeHandle(componentOrHandle: any): ?number {
   if (hostInstance == null) {
     return hostInstance;
   }
-  if ((hostInstance: any).
-  canonical
-)
-  {
+  if ((hostInstance: any).canonical) {
     // Fabric
-    return (hostInstance: any)
-  .
-    canonical._nativeTag;
+    return (hostInstance: any).canonical._nativeTag;
   }
   return hostInstance._nativeTag;
 }
@@ -83,7 +78,7 @@ ReactGenericBatching.injection.injectRenderer(ReactNativeFiberRenderer);
 function computeComponentStackForErrorReporting(reactTag: number): string {
   let fiber = ReactNativeComponentTree.getClosestInstanceFromNode(reactTag);
   if (!fiber) {
-    return '';
+    return "";
   }
   return getStackAddendumByWorkInProgressFiber(fiber);
 }
@@ -104,7 +99,7 @@ const ReactNativeRenderer: ReactNativeType = {
       root = ReactNativeFiberRenderer.createContainer(
         containerTag,
         false,
-        false,
+        false
       );
       roots.set(containerTag, root);
     }
@@ -130,9 +125,11 @@ const ReactNativeRenderer: ReactNativeType = {
     UIManager.removeRootView(containerTag);
   },
 
-  createPortal(children: ReactNodeList,
-               containerTag: number,
-               key: ?string = null,) {
+  createPortal(
+    children: ReactNodeList,
+    containerTag: number,
+    key: ?string = null
+  ) {
     return ReactPortal.createPortal(children, containerTag, null, key);
   },
 
@@ -141,8 +138,8 @@ const ReactNativeRenderer: ReactNativeType = {
   __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: {
     // Used as a mixin in many createClass-based components
     NativeMethodsMixin: NativeMethodsMixin(findNodeHandle, findHostInstance),
-    computeComponentStackForErrorReporting,
-  },
+    computeComponentStackForErrorReporting
+  }
 };
 
 ReactNativeFiberRenderer.injectIntoDevTools({
@@ -150,7 +147,7 @@ ReactNativeFiberRenderer.injectIntoDevTools({
   getInspectorDataForViewTag: getInspectorDataForViewTag,
   bundleType: __DEV__ ? 1 : 0,
   version: ReactVersion,
-  rendererPackageName: 'react-native-renderer',
+  rendererPackageName: "react-native-renderer"
 });
 
 export default ReactNativeRenderer;

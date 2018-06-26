@@ -8,15 +8,15 @@
 import {
   getParentInstance,
   traverseTwoPhase,
-  traverseEnterLeave,
-} from 'shared/ReactTreeTraversal';
-import warning from 'fbjs/lib/warning';
+  traverseEnterLeave
+} from "shared/ReactTreeTraversal";
+import warning from "fbjs/lib/warning";
 
-import {getListener} from './EventPluginHub';
-import accumulateInto from './accumulateInto';
-import forEachAccumulated from './forEachAccumulated';
+import { getListener } from "./EventPluginHub";
+import accumulateInto from "./accumulateInto";
+import forEachAccumulated from "./forEachAccumulated";
 
-type PropagationPhases = 'bubbled' | 'captured';
+type PropagationPhases = "bubbled" | "captured";
 
 /**
  * Some event types have a notion of different registration names for different
@@ -46,13 +46,13 @@ function listenerAtPhase(inst, event, propagationPhase: PropagationPhases) {
  */
 function accumulateDirectionalDispatches(inst, phase, event) {
   if (__DEV__) {
-    warning(inst, 'Dispatching inst must not be null');
+    warning(inst, "Dispatching inst must not be null");
   }
   const listener = listenerAtPhase(inst, event, phase);
   if (listener) {
     event._dispatchListeners = accumulateInto(
       event._dispatchListeners,
-      listener,
+      listener
     );
     event._dispatchInstances = accumulateInto(event._dispatchInstances, inst);
   }
@@ -94,7 +94,7 @@ function accumulateDispatches(inst, ignoredDirection, event) {
     if (listener) {
       event._dispatchListeners = accumulateInto(
         event._dispatchListeners,
-        listener,
+        listener
       );
       event._dispatchInstances = accumulateInto(event._dispatchInstances, inst);
     }

@@ -7,10 +7,10 @@
  * @flow
  */
 
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import invariant from "fbjs/lib/invariant";
+import warning from "fbjs/lib/warning";
 
-import {isStartish, isMoveish, isEndish} from './ResponderTopLevelEventTypes';
+import { isStartish, isMoveish, isEndish } from "./ResponderTopLevelEventTypes";
 
 /**
  * Tracks the position and time of each active touch by `touch.identifier`. We
@@ -27,7 +27,7 @@ type TouchRecord = {
   currentTimeStamp: number,
   previousPageX: number,
   previousPageY: number,
-  previousTimeStamp: number,
+  previousTimeStamp: number
 };
 
 const MAX_TOUCH_BANK = 20;
@@ -39,18 +39,18 @@ const touchHistory = {
   // us having to loop through all of the touches all the time in the most
   // common case.
   indexOfSingleActiveTouch: -1,
-  mostRecentTimeStamp: 0,
+  mostRecentTimeStamp: 0
 };
 
 type Touch = {
   identifier: ?number,
   pageX: number,
   pageY: number,
-  timestamp: number,
+  timestamp: number
 };
 type TouchEvent = {
   changedTouches: Array<Touch>,
-  touches: Array<Touch>,
+  touches: Array<Touch>
 };
 
 function timestampForTouch(touch: Touch): number {
@@ -75,7 +75,7 @@ function createTouchRecord(touch: Touch): TouchRecord {
     currentTimeStamp: timestampForTouch(touch),
     previousPageX: touch.pageX,
     previousPageY: touch.pageY,
-    previousTimeStamp: timestampForTouch(touch),
+    previousTimeStamp: timestampForTouch(touch)
   };
 }
 
@@ -92,15 +92,15 @@ function resetTouchRecord(touchRecord: TouchRecord, touch: Touch): void {
   touchRecord.previousTimeStamp = timestampForTouch(touch);
 }
 
-function getTouchIdentifier({identifier}: Touch): number {
-  invariant(identifier != null, 'Touch object is missing identifier.');
+function getTouchIdentifier({ identifier }: Touch): number {
+  invariant(identifier != null, "Touch object is missing identifier.");
   if (__DEV__) {
     warning(
       identifier <= MAX_TOUCH_BANK,
-      'Touch identifier %s is greater than maximum supported %s which causes ' +
-        'performance issues backfilling array locations for all of the indices.',
+      "Touch identifier %s is greater than maximum supported %s which causes " +
+        "performance issues backfilling array locations for all of the indices.",
       identifier,
-      MAX_TOUCH_BANK,
+      MAX_TOUCH_BANK
     );
   }
   return identifier;
@@ -130,10 +130,10 @@ function recordTouchMove(touch: Touch): void {
     touchHistory.mostRecentTimeStamp = timestampForTouch(touch);
   } else {
     console.error(
-      'Cannot record touch move without a touch start.\n' + 'Touch Move: %s\n',
-      'Touch Bank: %s',
+      "Cannot record touch move without a touch start.\n" + "Touch Move: %s\n",
+      "Touch Bank: %s",
       printTouch(touch),
-      printTouchBank(),
+      printTouchBank()
     );
   }
 }
@@ -151,10 +151,10 @@ function recordTouchEnd(touch: Touch): void {
     touchHistory.mostRecentTimeStamp = timestampForTouch(touch);
   } else {
     console.error(
-      'Cannot record touch end without a touch start.\n' + 'Touch End: %s\n',
-      'Touch Bank: %s',
+      "Cannot record touch end without a touch start.\n" + "Touch End: %s\n",
+      "Touch Bank: %s",
       printTouch(touch),
-      printTouchBank(),
+      printTouchBank()
     );
   }
 }
@@ -164,14 +164,14 @@ function printTouch(touch: Touch): string {
     identifier: touch.identifier,
     pageX: touch.pageX,
     pageY: touch.pageY,
-    timestamp: timestampForTouch(touch),
+    timestamp: timestampForTouch(touch)
   });
 }
 
 function printTouchBank(): string {
   let printed = JSON.stringify(touchBank.slice(0, MAX_TOUCH_BANK));
   if (touchBank.length > MAX_TOUCH_BANK) {
-    printed += ' (original size: ' + touchBank.length + ')';
+    printed += " (original size: " + touchBank.length + ")";
   }
   return printed;
 }
@@ -202,14 +202,14 @@ const ResponderTouchHistoryStore = {
           const activeRecord = touchBank[touchHistory.indexOfSingleActiveTouch];
           warning(
             activeRecord != null && activeRecord.touchActive,
-            'Cannot find single active touch.',
+            "Cannot find single active touch."
           );
         }
       }
     }
   },
 
-  touchHistory,
+  touchHistory
 };
 
 export default ResponderTouchHistoryStore;

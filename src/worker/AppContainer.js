@@ -8,17 +8,17 @@
  * @flow
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 class AppContainer extends React.Component<Props, State> {
   static childContextTypes = {
-    rootTag: PropTypes.number,
+    rootTag: PropTypes.number
   };
 
   getChildContext() {
     return {
-      rootTag: this.props.rootTag,
+      rootTag: this.props.rootTag
     };
   }
 

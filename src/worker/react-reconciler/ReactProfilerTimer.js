@@ -7,13 +7,13 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
+import type { Fiber } from "./ReactFiber";
 
-import getComponentName from 'shared/getComponentName';
-import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
+import getComponentName from "shared/getComponentName";
+import { enableProfilerTimer } from "shared/ReactFeatureFlags";
 
-import warning from 'fbjs/lib/warning';
-import {now} from './ReactFiberHostConfig';
+import warning from "fbjs/lib/warning";
+import { now } from "./ReactFiberHostConfig";
 
 export type ProfilerTimer = {
   checkActualRenderTimeStackEmpty(): void,
@@ -26,7 +26,7 @@ export type ProfilerTimer = {
   recordCommitTime(): void,
   recordElapsedBaseRenderTimeIfRunning(fiber: Fiber): void,
   startBaseRenderTimer(): void,
-  stopBaseRenderTimerIfRunning(): void,
+  stopBaseRenderTimerIfRunning(): void
 };
 
 let commitTime: number = 0;
@@ -65,7 +65,7 @@ function checkActualRenderTimeStackEmpty(): void {
   if (__DEV__) {
     warning(
       fiberStack.length === 0,
-      'Expected an empty stack. Something was not reset properly.',
+      "Expected an empty stack. Something was not reset properly."
     );
   }
 }
@@ -99,8 +99,8 @@ function recordElapsedActualRenderTime(fiber: Fiber): void {
   if (__DEV__) {
     warning(
       fiber === fiberStack.pop(),
-      'Unexpected Fiber (%s) popped.',
-      getComponentName(fiber),
+      "Unexpected Fiber (%s) popped.",
+      getComponentName(fiber)
     );
   }
 
@@ -151,9 +151,9 @@ function startBaseRenderTimer(): void {
     if (baseStartTime !== -1) {
       warning(
         false,
-        'Cannot start base timer that is already running. ' +
-          'This error is likely caused by a bug in React. ' +
-          'Please file an issue.',
+        "Cannot start base timer that is already running. " +
+          "This error is likely caused by a bug in React. " +
+          "Please file an issue."
       );
     }
   }
@@ -178,5 +178,5 @@ export {
   resumeActualRenderTimerIfPaused,
   recordElapsedBaseRenderTimeIfRunning,
   startBaseRenderTimer,
-  stopBaseRenderTimerIfRunning,
+  stopBaseRenderTimerIfRunning
 };

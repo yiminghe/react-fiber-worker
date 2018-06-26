@@ -1,6 +1,8 @@
 {
   "name": "react-fiber-worker",
   "devDependencies": {
+    "lint-staged": "^7.2.0",
+    "prettier": "^1.11.1",
     "@storybook/addon-actions": "^3.4.6",
     "@storybook/addon-links": "^3.4.6",
     "@storybook/addons": "^3.4.6",
@@ -12,11 +14,22 @@
     "react-dom": "16.x",
     "worker-loader": "^2.0.0"
   },
+  "lint-staged": {
+    "*.{tsx,js,jsx,ts}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "pre-commit": [
+    "lint-staged",
+    "lint"
+  ],
   "dependencies": {
     "@storybook/addon-options": "^3.4.6",
     "create-react-class": "^15.6.3"
   },
   "scripts": {
+    "prettier": "prettier --write \"{src,stories}/**/*.{js,tsx}\"",
     "start": "start-storybook -p 6006",
     "build": "build-storybook",
     "deploy": "storybook-to-ghpages"

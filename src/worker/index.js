@@ -1,6 +1,6 @@
 import AppRegistry from './AppRegistry';
 import { callViewMethod, measure } from './bridge';
-import ReactNativeRender from './worker-render/';
+import ReactNativeRender from './react-native-render/';
 
 const { findNodeHandle } = ReactNativeRender;
 

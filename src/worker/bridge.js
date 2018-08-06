@@ -2,7 +2,7 @@ import AppRegistry from './AppRegistry';
 import {
   receiveTouches,
   receiveEvent,
-} from './worker-render/ReactNativeEventEmitter';
+} from './react-native-render/ReactNativeEventEmitter';
 
 self.onmessage = function(event) {
   const { type } = event.data;

@@ -30,4 +30,4 @@ function flattenStyle(style) {
   return result;
 }
 
-module.exports = flattenStyle;
+export default flattenStyle;

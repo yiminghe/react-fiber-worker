@@ -92,13 +92,13 @@ import {
   Callback,
   ShouldCapture,
   DidCapture,
-} from 'shared/ReactTypeOfSideEffect';
-import { ClassComponent } from 'shared/ReactTypeOfWork';
+} from '../../shared/ReactTypeOfSideEffect';
+import { ClassComponent } from '../../shared/ReactTypeOfWork';
 
 import {
   debugRenderPhaseSideEffects,
   debugRenderPhaseSideEffectsForStrictMode,
-} from 'shared/ReactFeatureFlags';
+} from '../../shared/ReactFeatureFlags';
 
 import { StrictMode } from './ReactTypeOfMode';
 

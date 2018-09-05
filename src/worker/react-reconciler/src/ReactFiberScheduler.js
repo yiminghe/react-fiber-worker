@@ -11,9 +11,9 @@ import type { Fiber } from './ReactFiber';
 import type { FiberRoot, Batch } from './ReactFiberRoot';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 
-import ReactErrorUtils from 'shared/ReactErrorUtils';
-import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
+import ReactErrorUtils from '../../shared/ReactErrorUtils';
+import { getStackAddendumByWorkInProgressFiber } from '../../shared/ReactFiberComponentTreeHook';
+import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
 import ReactStrictModeWarnings from './ReactStrictModeWarnings';
 import {
   NoEffect,
@@ -29,22 +29,22 @@ import {
   Ref,
   Incomplete,
   HostEffectMask,
-} from 'shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactTypeOfSideEffect';
 import {
   HostRoot,
   ClassComponent,
   HostComponent,
   ContextProvider,
   HostPortal,
-} from 'shared/ReactTypeOfWork';
+} from '../../shared/ReactTypeOfWork';
 import {
   enableProfilerTimer,
   enableUserTimingAPI,
   replayFailedUnitOfWorkWithInvokeGuardedCallback,
   warnAboutDeprecatedLifecycles,
   warnAboutLegacyContextAPI,
-} from 'shared/ReactFeatureFlags';
-import getComponentName from 'shared/getComponentName';
+} from '../../shared/ReactFeatureFlags';
+import getComponentName from '../../shared/getComponentName';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';
 

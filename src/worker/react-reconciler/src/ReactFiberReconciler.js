@@ -15,17 +15,17 @@ import type {
   Container,
   PublicInstance,
 } from './ReactFiberHostConfig';
-import type { ReactNodeList } from 'shared/ReactTypes';
+import type { ReactNodeList } from '../../shared/ReactTypes';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 
 import {
   findCurrentHostFiber,
   findCurrentHostFiberWithNoPortals,
-} from '../react-reconciler/reflection';
-import * as ReactInstanceMap from 'shared/ReactInstanceMap';
-import { HostComponent } from 'shared/ReactTypeOfWork';
+} from '../../react-reconciler/reflection';
+import * as ReactInstanceMap from '../../shared/ReactInstanceMap';
+import { HostComponent } from '../../shared/ReactTypeOfWork';
 import emptyObject from 'fbjs/lib/emptyObject';
-import getComponentName from 'shared/getComponentName';
+import getComponentName from '../../shared/getComponentName';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';
 

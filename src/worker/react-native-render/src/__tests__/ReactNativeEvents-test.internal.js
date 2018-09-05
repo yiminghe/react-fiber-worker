@@ -67,8 +67,8 @@ beforeEach(() => {
   RCTEventEmitter = require('RCTEventEmitter');
   React = require('react');
   ReactNative = require('react-native-renderer');
-  ResponderEventPlugin = require('events/ResponderEventPlugin').default;
-  UIManager = require('UIManager');
+  ResponderEventPlugin = require('../../events/ResponderEventPlugin').default;
+  UIManager = require('../../UIManager');
   createReactNativeComponentClass = require('ReactNativeViewConfigRegistry')
     .register;
 });

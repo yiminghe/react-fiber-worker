@@ -20,8 +20,8 @@ describe('ReactFabric', () => {
     jest.resetModules();
     ReactNative = require('react-native-renderer');
     jest.resetModules();
-    jest.mock('shared/ReactFeatureFlags', () =>
-      require('shared/forks/ReactFeatureFlags.native-fabric-oss'),
+    jest.mock('../../shared/ReactFeatureFlags', () =>
+      require('../../shared/forks/ReactFeatureFlags.native-fabric-oss'),
     );
 
     React = require('react');

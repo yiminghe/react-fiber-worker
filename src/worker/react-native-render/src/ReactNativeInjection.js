@@ -12,9 +12,9 @@ import './ReactNativeInjectionShared';
 import * as ReactNativeEventEmitter from './ReactNativeEventEmitter';
 
 // Module provided by RN:
-import RCTEventEmitter from 'RCTEventEmitter';
+// import RCTEventEmitter from 'RCTEventEmitter';
 
 /**
  * Register the event emitter with the native bridge
  */
-RCTEventEmitter.register(ReactNativeEventEmitter);
+// RCTEventEmitter.register(ReactNativeEventEmitter);

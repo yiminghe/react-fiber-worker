@@ -8,26 +8,26 @@
  */
 
 import type { ReactNativeType } from './ReactNativeTypes';
-import type { ReactNodeList } from 'shared/ReactTypes';
+import type { ReactNodeList } from '../../shared/ReactTypes';
 
 import './ReactNativeInjection';
 
-import * as ReactNativeFiberRenderer from '../react-reconciler/inline.native';
-import * as ReactPortal from 'shared/ReactPortal';
-import * as ReactGenericBatching from 'events/ReactGenericBatching';
-import ReactVersion from 'shared/ReactVersion';
+import * as ReactNativeFiberRenderer from '../../react-reconciler/inline.native';
+import * as ReactPortal from '../../shared/ReactPortal';
+import * as ReactGenericBatching from '../../events/ReactGenericBatching';
+import ReactVersion from '../../shared/ReactVersion';
 // Module provided by RN:
-import UIManager from 'UIManager';
+import UIManager from '../../UIManager';
 
-import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
+import { getStackAddendumByWorkInProgressFiber } from '../../shared/ReactFiberComponentTreeHook';
 
 import NativeMethodsMixin from './NativeMethodsMixin';
 import ReactNativeComponent from './ReactNativeComponent';
 import * as ReactNativeComponentTree from './ReactNativeComponentTree';
 import { getInspectorDataForViewTag } from './ReactNativeFiberInspector';
 
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
-import getComponentName from 'shared/getComponentName';
+import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
+import getComponentName from '../../shared/getComponentName';
 import warning from 'fbjs/lib/warning';
 
 const findHostInstance = ReactNativeFiberRenderer.findHostInstance;

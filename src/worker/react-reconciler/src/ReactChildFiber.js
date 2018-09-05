@@ -7,27 +7,27 @@
  * @flow
  */
 
-import type { ReactElement } from 'shared/ReactElementType';
-import type { ReactPortal } from 'shared/ReactTypes';
-import type { Fiber } from '../react-reconciler/src/ReactFiber';
-import type { ExpirationTime } from '../react-reconciler/src/ReactFiberExpirationTime';
+import type { ReactElement } from '../../shared/ReactElementType';
+import type { ReactPortal } from '../../shared/ReactTypes';
+import type { Fiber } from '../../react-reconciler/src/ReactFiber';
+import type { ExpirationTime } from '../../react-reconciler/src/ReactFiberExpirationTime';
 
-import getComponentName from 'shared/getComponentName';
-import { Placement, Deletion } from 'shared/ReactTypeOfSideEffect';
+import getComponentName from '../../shared/getComponentName';
+import { Placement, Deletion } from '../../shared/ReactTypeOfSideEffect';
 import {
   getIteratorFn,
   REACT_ELEMENT_TYPE,
   REACT_FRAGMENT_TYPE,
   REACT_PORTAL_TYPE,
-} from 'shared/ReactSymbols';
+} from '../../shared/ReactSymbols';
 import {
   FunctionalComponent,
   ClassComponent,
   HostText,
   HostPortal,
   Fragment,
-} from 'shared/ReactTypeOfWork';
-import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
+} from '../../shared/ReactTypeOfWork';
+import { getStackAddendumByWorkInProgressFiber } from '../../shared/ReactFiberComponentTreeHook';
 import emptyObject from 'fbjs/lib/emptyObject';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';

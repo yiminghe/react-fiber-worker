@@ -7,18 +7,18 @@
  * @flow
  */
 
-import type { Fiber } from '../react-reconciler/src/ReactFiber';
+import type { Fiber } from '../../react-reconciler/src/ReactFiber';
 
 import {
   findCurrentHostFiber,
   findCurrentFiberUsingSlowPath,
-} from '../react-reconciler/reflection';
-import getComponentName from 'shared/getComponentName';
-import { HostComponent } from 'shared/ReactTypeOfWork';
+} from '../../react-reconciler/reflection';
+import getComponentName from '../../shared/getComponentName';
+import { HostComponent } from '../../shared/ReactTypeOfWork';
 import emptyObject from 'fbjs/lib/emptyObject';
 import invariant from 'fbjs/lib/invariant';
 // Module provided by RN:
-import UIManager from 'UIManager';
+import UIManager from '../../UIManager';
 
 import { getClosestInstanceFromNode } from './ReactNativeComponentTree';
 

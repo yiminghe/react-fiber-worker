@@ -16,7 +16,7 @@ function toStyleString(o) {
 
 export function createView(bridge, tag, viewClass, rootTag, props) {
   let node;
-  if (viewClass === 'rawText') {
+  if (viewClass === 'RCTRawText') {
     node = document.createTextNode(props.text);
   } else {
     node = document.createElement(tagMap[viewClass] || viewClass);
@@ -52,7 +52,7 @@ export function setChildren(bridge, parentTag, tags) {
 
 export function updateView(bridge, tag, viewClass, props) {
   let node = viewRegistry[tag];
-  if (viewClass === 'rawText') {
+  if (viewClass === 'RCTRawText') {
     node.nodeValue = props.text;
   } else {
     if (props) {

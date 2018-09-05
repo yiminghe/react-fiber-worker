@@ -14,11 +14,11 @@
  * TODO: require this in packager, not in React #10932517
  */
 // Module provided by RN:
-import 'InitializeCore';
+// import 'InitializeCore';
 
-import * as EventPluginHub from 'events/EventPluginHub';
-import * as EventPluginUtils from 'events/EventPluginUtils';
-import ResponderEventPlugin from 'events/ResponderEventPlugin';
+import * as EventPluginHub from '../../events/EventPluginHub';
+import * as EventPluginUtils from '../../events/EventPluginUtils';
+import ResponderEventPlugin from '../../events/ResponderEventPlugin';
 
 import ReactNativeBridgeEventPlugin from './ReactNativeBridgeEventPlugin';
 import * as ReactNativeComponentTree from './ReactNativeComponentTree';

@@ -19,7 +19,7 @@ import type { FiberRoot } from './ReactFiberRoot';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 import type { CapturedValue, CapturedError } from './ReactCapturedValue';
 
-import { enableProfilerTimer } from 'shared/ReactFeatureFlags';
+import { enableProfilerTimer } from '../../shared/ReactFeatureFlags';
 import { getCommitTime } from './ReactProfilerTimer';
 import {
   ClassComponent,
@@ -29,22 +29,22 @@ import {
   HostPortal,
   Profiler,
   TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
-import ReactErrorUtils from 'shared/ReactErrorUtils';
+} from '../../shared/ReactTypeOfWork';
+import ReactErrorUtils from '../../shared/ReactErrorUtils';
 import {
   ContentReset,
   Placement,
   Snapshot,
   Update,
-} from 'shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactTypeOfSideEffect';
 import { commitUpdateQueue } from './ReactUpdateQueue';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';
 
 import { onCommitUnmount } from './ReactFiberDevToolsHook';
 import { startPhaseTimer, stopPhaseTimer } from './ReactDebugFiberPerf';
-import getComponentName from 'shared/getComponentName';
-import { getStackAddendumByWorkInProgressFiber } from 'shared/ReactFiberComponentTreeHook';
+import getComponentName from '../../shared/getComponentName';
+import { getStackAddendumByWorkInProgressFiber } from '../../shared/ReactFiberComponentTreeHook';
 import { logCapturedError } from './ReactFiberErrorLogger';
 import {
   getPublicInstance,

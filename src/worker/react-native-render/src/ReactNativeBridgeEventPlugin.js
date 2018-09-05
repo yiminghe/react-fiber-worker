@@ -7,14 +7,14 @@
  * @flow
  */
 
-import type { AnyNativeEvent } from 'events/PluginModuleType';
+import type { AnyNativeEvent } from '../../events/PluginModuleType';
 import {
   accumulateTwoPhaseDispatches,
   accumulateDirectDispatches,
-} from 'events/EventPropagators';
-import type { TopLevelType } from 'events/TopLevelEventTypes';
-import * as ReactNativeViewConfigRegistry from 'ReactNativeViewConfigRegistry';
-import SyntheticEvent from 'events/SyntheticEvent';
+} from '../../events/EventPropagators';
+import type { TopLevelType } from '../../events/TopLevelEventTypes';
+import * as ReactNativeViewConfigRegistry from '../../ReactNativeViewConfigRegistry';
+import SyntheticEvent from '../../events/SyntheticEvent';
 import invariant from 'fbjs/lib/invariant';
 
 const {

@@ -18,8 +18,8 @@ import type {
 
 import React from 'react';
 // Modules provided by RN:
-import TextInputState from 'TextInputState';
-import UIManager from 'UIManager';
+import TextInputState from '../../TextInputState';
+import UIManager from '../../UIManager';
 
 import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
 import { mountSafeCallback } from './NativeMethodsMixinUtils';

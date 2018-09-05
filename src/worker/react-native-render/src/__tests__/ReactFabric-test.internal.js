@@ -16,8 +16,8 @@ let createReactNativeComponentClass;
 let UIManager;
 let FabricUIManager;
 
-jest.mock('shared/ReactFeatureFlags', () =>
-  require('shared/forks/ReactFeatureFlags.native-fabric-oss'),
+jest.mock('../../shared/ReactFeatureFlags', () =>
+  require('../../shared/forks/ReactFeatureFlags.native-fabric-oss'),
 );
 
 describe('ReactFabric', () => {
@@ -27,7 +27,7 @@ describe('ReactFabric', () => {
     React = require('react');
     ReactFabric = require('react-native-renderer/fabric');
     FabricUIManager = require('FabricUIManager');
-    UIManager = require('UIManager');
+    UIManager = require('../../UIManager');
     createReactNativeComponentClass = require('ReactNativeViewConfigRegistry')
       .register;
   });

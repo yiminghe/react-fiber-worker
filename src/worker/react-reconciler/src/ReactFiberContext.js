@@ -10,9 +10,9 @@
 import type { Fiber } from './ReactFiber';
 import type { StackCursor } from './ReactFiberStack';
 
-import { isFiberMounted } from '../react-reconciler/reflection';
-import { ClassComponent, HostRoot } from 'shared/ReactTypeOfWork';
-import getComponentName from 'shared/getComponentName';
+import { isFiberMounted } from '../../react-reconciler/reflection';
+import { ClassComponent, HostRoot } from '../../shared/ReactTypeOfWork';
+import getComponentName from '../../shared/getComponentName';
 import emptyObject from 'fbjs/lib/emptyObject';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';

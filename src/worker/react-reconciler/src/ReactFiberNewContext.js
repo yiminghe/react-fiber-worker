@@ -8,7 +8,7 @@
  */
 
 import type { Fiber } from './ReactFiber';
-import type { ReactContext } from 'shared/ReactTypes';
+import type { ReactContext } from '../../shared/ReactTypes';
 import type { StackCursor } from './ReactFiberStack';
 
 export type NewContext = {

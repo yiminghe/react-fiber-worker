@@ -7,8 +7,8 @@
  * @flow
  */
 
-import type { ReactProviderType, ReactContext } from 'shared/ReactTypes';
-import type { Fiber } from '../react-reconciler/src/ReactFiber';
+import type { ReactProviderType, ReactContext } from '../../shared/ReactTypes';
+import type { Fiber } from '../../react-reconciler/src/ReactFiber';
 import type { FiberRoot } from './ReactFiberRoot';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 import checkPropTypes from 'prop-types/checkPropTypes';
@@ -28,7 +28,7 @@ import {
   ContextConsumer,
   Profiler,
   TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
+} from '../../shared/ReactTypeOfWork';
 import {
   NoEffect,
   PerformedWork,
@@ -37,17 +37,17 @@ import {
   DidCapture,
   Update,
   Ref,
-} from 'shared/ReactTypeOfSideEffect';
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
+} from '../../shared/ReactTypeOfSideEffect';
+import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
 import {
   enableGetDerivedStateFromCatch,
   enableSuspense,
   debugRenderPhaseSideEffects,
   debugRenderPhaseSideEffectsForStrictMode,
   enableProfilerTimer,
-} from 'shared/ReactFeatureFlags';
+} from '../../shared/ReactFeatureFlags';
 import invariant from 'fbjs/lib/invariant';
-import getComponentName from 'shared/getComponentName';
+import getComponentName from '../../shared/getComponentName';
 import ReactStrictModeWarnings from './ReactStrictModeWarnings';
 import warning from 'fbjs/lib/warning';
 import ReactDebugCurrentFiber from './ReactDebugCurrentFiber';

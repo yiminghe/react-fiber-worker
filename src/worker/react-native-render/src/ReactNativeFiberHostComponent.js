@@ -17,8 +17,8 @@ import type {
 import type { Instance } from './ReactNativeHostConfig';
 
 // Modules provided by RN:
-import TextInputState from 'TextInputState';
-import UIManager from 'UIManager';
+import TextInputState from '../../TextInputState';
+import UIManager from '../../UIManager';
 
 import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
 import {

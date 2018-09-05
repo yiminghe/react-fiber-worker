@@ -21,7 +21,7 @@ describe('ReactNative', () => {
 
     React = require('react');
     ReactNative = require('react-native-renderer');
-    UIManager = require('UIManager');
+    UIManager = require('../../UIManager');
     createReactNativeComponentClass = require('ReactNativeViewConfigRegistry')
       .register;
   });

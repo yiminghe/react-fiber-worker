@@ -7,22 +7,22 @@
  * @flow
  */
 
-import type { Fiber } from '../react-reconciler/src/ReactFiber';
+import type { Fiber } from '../../react-reconciler/src/ReactFiber';
 
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';
 
-import * as ReactInstanceMap from 'shared/ReactInstanceMap';
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
-import getComponentName from 'shared/getComponentName';
+import * as ReactInstanceMap from '../../shared/ReactInstanceMap';
+import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
+import getComponentName from '../../shared/getComponentName';
 import {
   ClassComponent,
   HostComponent,
   HostRoot,
   HostPortal,
   HostText,
-} from 'shared/ReactTypeOfWork';
-import { NoEffect, Placement } from 'shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactTypeOfWork';
+import { NoEffect, Placement } from '../../shared/ReactTypeOfSideEffect';
 
 const MOUNTING = 1;
 const MOUNTED = 2;

@@ -10,17 +10,17 @@
 import type { Fiber } from './ReactFiber';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 
-import { Update, Snapshot } from 'shared/ReactTypeOfSideEffect';
+import { Update, Snapshot } from '../../shared/ReactTypeOfSideEffect';
 import {
   debugRenderPhaseSideEffects,
   debugRenderPhaseSideEffectsForStrictMode,
   warnAboutDeprecatedLifecycles,
-} from 'shared/ReactFeatureFlags';
+} from '../../shared/ReactFeatureFlags';
 import ReactStrictModeWarnings from './ReactStrictModeWarnings';
-import { isMounted } from '../react-reconciler/reflection';
-import * as ReactInstanceMap from 'shared/ReactInstanceMap';
+import { isMounted } from '../../react-reconciler/reflection';
+import * as ReactInstanceMap from '../../shared/ReactInstanceMap';
 import emptyObject from 'fbjs/lib/emptyObject';
-import getComponentName from 'shared/getComponentName';
+import getComponentName from '../../shared/getComponentName';
 import shallowEqual from 'fbjs/lib/shallowEqual';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';

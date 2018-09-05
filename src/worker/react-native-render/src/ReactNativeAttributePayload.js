@@ -8,8 +8,8 @@
  */
 
 // Modules provided by RN:
-import deepDiffer from 'deepDiffer';
-import flattenStyle from 'flattenStyle';
+import deepDiffer from '../../utils/deepDiffer';
+import flattenStyle from '../../utils/flattenStyle';
 
 const emptyObject = {};
 

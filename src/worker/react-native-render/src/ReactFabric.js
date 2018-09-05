@@ -8,23 +8,23 @@
  */
 
 import type { ReactFabricType } from './ReactNativeTypes';
-import type { ReactNodeList } from 'shared/ReactTypes';
+import type { ReactNodeList } from '../../shared/ReactTypes';
 
 import './ReactFabricInjection';
 
-import * as ReactFabricRenderer from '../react-reconciler/inline.fabric';
+import * as ReactFabricRenderer from '../../react-reconciler/inline.fabric';
 
-import * as ReactPortal from 'shared/ReactPortal';
-import * as ReactGenericBatching from 'events/ReactGenericBatching';
-import ReactVersion from 'shared/ReactVersion';
+import * as ReactPortal from '../../shared/ReactPortal';
+import * as ReactGenericBatching from '../../events/ReactGenericBatching';
+import ReactVersion from '../../shared/ReactVersion';
 
 import NativeMethodsMixin from './NativeMethodsMixin';
 import ReactNativeComponent from './ReactNativeComponent';
 import * as ReactNativeComponentTree from './ReactNativeComponentTree';
 import { getInspectorDataForViewTag } from './ReactNativeFiberInspector';
 
-import { ReactCurrentOwner } from 'shared/ReactGlobalSharedState';
-import getComponentName from 'shared/getComponentName';
+import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
+import getComponentName from '../../shared/getComponentName';
 import warning from 'fbjs/lib/warning';
 
 const findHostInstance = ReactFabricRenderer.findHostInstance;

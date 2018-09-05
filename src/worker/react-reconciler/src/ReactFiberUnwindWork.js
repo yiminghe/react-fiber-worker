@@ -21,18 +21,18 @@ import {
   HostPortal,
   ContextProvider,
   TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
+} from '../../shared/ReactTypeOfWork';
 import {
   DidCapture,
   Incomplete,
   NoEffect,
   ShouldCapture,
-} from 'shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactTypeOfSideEffect';
 import {
   enableGetDerivedStateFromCatch,
   enableProfilerTimer,
   enableSuspense,
-} from 'shared/ReactFeatureFlags';
+} from '../../shared/ReactFeatureFlags';
 import { ProfileMode } from './ReactTypeOfMode';
 
 import { createCapturedValue } from './ReactCapturedValue';

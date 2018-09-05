@@ -29,7 +29,7 @@ import invariant from 'fbjs/lib/invariant';
 import { dispatchEvent } from './ReactFabricEventEmitter';
 
 // Modules provided by RN:
-import TextInputState from 'TextInputState';
+import TextInputState from '../../TextInputState';
 import {
   createNode,
   cloneNode,
@@ -42,7 +42,7 @@ import {
   completeRoot,
   registerEventHandler,
 } from 'FabricUIManager';
-import UIManager from 'UIManager';
+import UIManager from '../../UIManager';
 
 // Counter for uniquely identifying views.
 // % 10 === 1 means it is a rootTag.
@@ -153,8 +153,8 @@ class ReactFabricHostComponent {
 // eslint-disable-next-line no-unused-expressions
 (ReactFabricHostComponent.prototype: NativeMethodsMixinType);
 
-export * from 'shared/HostConfigWithNoMutation';
-export * from 'shared/HostConfigWithNoHydration';
+export * from '../../shared/HostConfigWithNoMutation';
+export * from '../../shared/HostConfigWithNoHydration';
 
 export function appendInitialChild(
   parentInstance: Instance,

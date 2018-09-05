@@ -13,10 +13,10 @@ import emptyObject from 'fbjs/lib/emptyObject';
 import invariant from 'fbjs/lib/invariant';
 
 // Modules provided by RN:
-import UIManager from 'UIManager';
-import deepFreezeAndThrowOnMutationInDev from 'deepFreezeAndThrowOnMutationInDev';
+import UIManager from '../../UIManager';
+import deepFreezeAndThrowOnMutationInDev from '../../utils/deepFreezeAndThrowOnMutationInDev';
 
-import * as ReactNativeViewConfigRegistry from 'ReactNativeViewConfigRegistry';
+import * as ReactNativeViewConfigRegistry from '../../ReactNativeViewConfigRegistry';
 import * as ReactNativeAttributePayload from './ReactNativeAttributePayload';
 import {
   precacheFiberNode,
@@ -67,8 +67,8 @@ function recursivelyUncacheFiberNode(node: Instance | TextInstance) {
   }
 }
 
-export * from 'shared/HostConfigWithNoPersistence';
-export * from 'shared/HostConfigWithNoHydration';
+export * from '../../shared/HostConfigWithNoPersistence';
+export * from '../../shared/HostConfigWithNoHydration';
 
 export function appendInitialChild(
   parentInstance: Instance,
@@ -128,10 +128,10 @@ export function createTextInstance(
   hostContext: HostContext,
   internalInstanceHandle: Object,
 ): TextInstance {
-  invariant(
-    hostContext.isInAParentText,
-    'Text strings must be rendered within a <Text> component.',
-  );
+  // invariant(
+  //   hostContext.isInAParentText,
+  //   'Text strings must be rendered within a <Text> component.',
+  // );
 
   const tag = allocateTag();
 

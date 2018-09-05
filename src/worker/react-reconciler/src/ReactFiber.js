@@ -7,17 +7,21 @@
  * @flow
  */
 
-import type { ReactElement, Source } from 'shared/ReactElementType';
-import type { ReactFragment, ReactPortal, RefObject } from 'shared/ReactTypes';
-import type { TypeOfWork } from 'shared/ReactTypeOfWork';
+import type { ReactElement, Source } from '../../shared/ReactElementType';
+import type {
+  ReactFragment,
+  ReactPortal,
+  RefObject,
+} from '../../shared/ReactTypes';
+import type { TypeOfWork } from '../../shared/ReactTypeOfWork';
 import type { TypeOfMode } from './ReactTypeOfMode';
-import type { TypeOfSideEffect } from 'shared/ReactTypeOfSideEffect';
+import type { TypeOfSideEffect } from '../../shared/ReactTypeOfSideEffect';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 import type { UpdateQueue } from './ReactUpdateQueue';
 
 import invariant from 'fbjs/lib/invariant';
-import { enableProfilerTimer } from 'shared/ReactFeatureFlags';
-import { NoEffect } from 'shared/ReactTypeOfSideEffect';
+import { enableProfilerTimer } from '../../shared/ReactFeatureFlags';
+import { NoEffect } from '../../shared/ReactTypeOfSideEffect';
 import {
   IndeterminateComponent,
   ClassComponent,
@@ -32,8 +36,8 @@ import {
   ContextConsumer,
   Profiler,
   TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
-import getComponentName from 'shared/getComponentName';
+} from '../../shared/ReactTypeOfWork';
+import getComponentName from '../../shared/getComponentName';
 
 import { NoWork } from './ReactFiberExpirationTime';
 import {
@@ -51,7 +55,7 @@ import {
   REACT_CONTEXT_TYPE,
   REACT_ASYNC_MODE_TYPE,
   REACT_TIMEOUT_TYPE,
-} from 'shared/ReactSymbols';
+} from '../../shared/ReactSymbols';
 
 let hasBadMapPolyfill;
 

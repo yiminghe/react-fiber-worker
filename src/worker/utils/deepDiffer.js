@@ -69,4 +69,4 @@ const deepDiffer = function(
   return false;
 };
 
-module.exports = deepDiffer;
+export default deepDiffer;

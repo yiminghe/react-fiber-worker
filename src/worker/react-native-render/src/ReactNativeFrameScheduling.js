@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type { Deadline } from '../react-reconciler/src/ReactFiberScheduler';
+import type { Deadline } from '../../react-reconciler/src/ReactFiberScheduler';
 
 const hasNativePerformanceNow =
   typeof performance === 'object' && typeof performance.now === 'function';

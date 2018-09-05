@@ -20,7 +20,7 @@ import type {
   HostContext,
 } from './ReactFiberHostConfig';
 
-import { enableProfilerTimer } from 'shared/ReactFeatureFlags';
+import { enableProfilerTimer } from '../../shared/ReactFeatureFlags';
 import {
   IndeterminateComponent,
   FunctionalComponent,
@@ -36,8 +36,8 @@ import {
   Mode,
   Profiler,
   TimeoutComponent,
-} from 'shared/ReactTypeOfWork';
-import { Placement, Ref, Update } from 'shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactTypeOfWork';
+import { Placement, Ref, Update } from '../../shared/ReactTypeOfSideEffect';
 import { ProfileMode } from './ReactTypeOfMode';
 import invariant from 'fbjs/lib/invariant';
 

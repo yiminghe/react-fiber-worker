@@ -12,7 +12,7 @@ import type { ExpirationTime } from './ReactFiberExpirationTime';
 
 import { NoWork } from './ReactFiberExpirationTime';
 
-import { enableSuspense } from 'shared/ReactFeatureFlags';
+import { enableSuspense } from '../../shared/ReactFeatureFlags';
 
 // TODO: Offscreen updates
 

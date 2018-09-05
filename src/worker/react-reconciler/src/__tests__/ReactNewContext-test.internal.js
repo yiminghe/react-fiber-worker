@@ -9,7 +9,7 @@
 
 'use strict';
 
-let ReactFeatureFlags = require('shared/ReactFeatureFlags');
+let ReactFeatureFlags = require('../../shared/ReactFeatureFlags');
 
 let React = require('react');
 let ReactNoop;
@@ -18,7 +18,7 @@ let gen;
 describe('ReactNewContext', () => {
   beforeEach(() => {
     jest.resetModules();
-    ReactFeatureFlags = require('shared/ReactFeatureFlags');
+    ReactFeatureFlags = require('../../shared/ReactFeatureFlags');
     ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false;
     React = require('react');
     ReactNoop = require('react-noop-renderer');
@@ -748,7 +748,7 @@ describe('ReactNewContext', () => {
 
     // Get a new copy of ReactNoop
     jest.resetModules();
-    ReactFeatureFlags = require('shared/ReactFeatureFlags');
+    ReactFeatureFlags = require('../../shared/ReactFeatureFlags');
     React = require('react');
     ReactNoop = require('react-noop-renderer');
 

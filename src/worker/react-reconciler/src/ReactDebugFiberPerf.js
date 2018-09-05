@@ -9,8 +9,8 @@
 
 import type { Fiber } from './ReactFiber';
 
-import { enableUserTimingAPI } from 'shared/ReactFeatureFlags';
-import getComponentName from 'shared/getComponentName';
+import { enableUserTimingAPI } from '../../shared/ReactFeatureFlags';
+import getComponentName from '../../shared/getComponentName';
 import {
   HostRoot,
   HostComponent,
@@ -20,7 +20,7 @@ import {
   ContextProvider,
   ContextConsumer,
   Mode,
-} from 'shared/ReactTypeOfWork';
+} from '../../shared/ReactTypeOfWork';
 
 type MeasurementPhase =
   | 'componentWillMount'

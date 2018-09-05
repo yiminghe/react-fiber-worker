@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type { Fiber } from 'react-reconciler/src/ReactFiber';
+import type { Fiber } from '../react-reconciler/src/ReactFiber';
 
 import {
   REACT_ASYNC_MODE_TYPE,
@@ -19,7 +19,7 @@ import {
   REACT_PROVIDER_TYPE,
   REACT_STRICT_MODE_TYPE,
   REACT_TIMEOUT_TYPE,
-} from 'shared/ReactSymbols';
+} from '../shared/ReactSymbols';
 
 function getComponentName(fiber: Fiber): string | null {
   const { type } = fiber;

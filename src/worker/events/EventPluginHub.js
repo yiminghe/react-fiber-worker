@@ -6,7 +6,7 @@
  * @flow
  */
 
-import ReactErrorUtils from 'shared/ReactErrorUtils';
+import ReactErrorUtils from '../shared/ReactErrorUtils';
 import invariant from 'fbjs/lib/invariant';
 
 import {
@@ -23,7 +23,7 @@ import forEachAccumulated from './forEachAccumulated';
 
 import type { PluginModule } from './PluginModuleType';
 import type { ReactSyntheticEvent } from './ReactSyntheticEventType';
-import type { Fiber } from 'react-reconciler/src/ReactFiber';
+import type { Fiber } from '../react-reconciler/src/ReactFiber';
 import type { AnyNativeEvent } from './PluginModuleType';
 import type { TopLevelType } from './TopLevelEventTypes';
 

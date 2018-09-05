@@ -9,7 +9,7 @@ import {
   getParentInstance,
   traverseTwoPhase,
   traverseEnterLeave,
-} from 'shared/ReactTreeTraversal';
+} from '../shared/ReactTreeTraversal';
 import warning from 'fbjs/lib/warning';
 
 import { getListener } from './EventPluginHub';

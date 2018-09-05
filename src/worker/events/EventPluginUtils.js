@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import ReactErrorUtils from 'shared/ReactErrorUtils';
+import ReactErrorUtils from '../shared/ReactErrorUtils';
 import invariant from 'fbjs/lib/invariant';
 import warning from 'fbjs/lib/warning';
 

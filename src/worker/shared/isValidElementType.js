@@ -16,7 +16,7 @@ import {
   REACT_PROVIDER_TYPE,
   REACT_STRICT_MODE_TYPE,
   REACT_TIMEOUT_TYPE,
-} from 'shared/ReactSymbols';
+} from '../shared/ReactSymbols';
 
 export default function isValidElementType(type: mixed) {
   return (

@@ -12,9 +12,10 @@
     "lint-staged": "^7.2.0",
     "pre-commit": "1.x",
     "prettier": "^1.11.1",
-    "react": "16.x",
-    "react-dom": "16.x",
-    "worker-loader": "^2.0.0"
+    "react": "16.4.x",
+    "react-dom": "16.4.x",
+    "worker-loader": "^2.0.0",
+    "@storybook/addon-options": "^3.4.6"
   },
   "lint-staged": {
     "*.{tsx,js,jsx,ts}": [
@@ -26,7 +27,6 @@
     "lint-staged"
   ],
   "dependencies": {
-    "@storybook/addon-options": "^3.4.6",
     "create-react-class": "^15.6.3",
     "fbjs": "^0.8.17",
     "prop-types": "^15.6.2"

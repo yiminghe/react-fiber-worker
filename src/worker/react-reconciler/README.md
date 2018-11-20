@@ -9,16 +9,16 @@ This is an experimental package for creating custom React renderers.
 ## API
 
 ```js
-var Reconciler = require('../react-reconciler');
+const Reconciler = require('react-reconciler');
 
-var HostConfig = {
+const HostConfig = {
   // You'll need to implement some methods here.
   // See below for more information and examples.
 };
 
-var MyRenderer = Reconciler(HostConfig);
+const MyRenderer = Reconciler(HostConfig);
 
-var RendererPublicAPI = {
+const RendererPublicAPI = {
   render(element, container, callback) {
     // Call MyRenderer.updateContainer() to schedule changes on the roots.
     // See ReactDOM, React Native, or React ART for practical examples.
@@ -33,7 +33,7 @@ module.exports = RendererPublicAPI;
 A "host config" is an object that you need to provide, and that describes how to make something happen in the "host" environment (e.g. DOM, canvas, console, or whatever your rendering target is). It looks like this:
 
 ```js
-var HostConfig = {
+const HostConfig = {
   createInstance(type, props) {
     // e.g. DOM renderer returns a DOM node
   },
@@ -45,6 +45,11 @@ var HostConfig = {
   // ...
 };
 ```
+
+**For an introduction to writing a very simple custom renderer, check out this article series:**
+
+* **[Building a simple custom renderer to DOM](https://medium.com/@agent_hunt/hello-world-custom-react-renderer-9a95b7cd04bc)**
+* **[Building a simple custom renderer to native](https://medium.com/@agent_hunt/introduction-to-react-native-renderers-aka-react-native-is-the-java-and-react-native-renderers-are-828a0022f433)**
 
 The full list of supported methods [can be found here](https://github.com/facebook/react/blob/master/packages/react-reconciler/src/forks/ReactFiberHostConfig.custom.js). For their signatures, we recommend looking at specific examples below.
 

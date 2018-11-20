@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,7 +9,7 @@
 
 import type { Fiber } from './ReactFiber';
 
-import { getStackAddendumByWorkInProgressFiber } from '../../shared/ReactFiberComponentTreeHook';
+import { getStackByFiberInDevAndProd } from './ReactCurrentFiber';
 
 export type CapturedValue<T> = {
   value: T,
@@ -36,6 +36,6 @@ export function createCapturedValue<T>(
   return {
     value,
     source,
-    stack: getStackAddendumByWorkInProgressFiber(source),
+    stack: getStackByFiberInDevAndProd(source),
   };
 }

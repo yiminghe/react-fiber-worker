@@ -12,7 +12,7 @@
 
 import AppContainer from './AppContainer';
 import React from 'react';
-import ReactNative from './react-native-render/';
+import ReactNative from './react-native-renderer/';
 import invariant from 'fbjs/lib/invariant';
 
 export default function renderApplication(

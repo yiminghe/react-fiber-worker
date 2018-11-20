@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -21,25 +21,25 @@ import type { ExpirationTime } from './ReactFiberExpirationTime';
 import {
   findCurrentHostFiber,
   findCurrentHostFiberWithNoPortals,
-} from '../../react-reconciler/reflection';
+} from '../reflection';
 import * as ReactInstanceMap from '../../shared/ReactInstanceMap';
-import { HostComponent } from '../../shared/ReactTypeOfWork';
-import emptyObject from 'fbjs/lib/emptyObject';
+import { HostComponent, ClassComponent } from '../../shared/ReactWorkTags';
 import getComponentName from '../../shared/getComponentName';
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import invariant from '../../shared/invariant';
+import warningWithoutStack from '../../shared/warningWithoutStack';
 
 import { getPublicInstance } from './ReactFiberHostConfig';
 import {
   findCurrentUnmaskedContext,
-  isContextProvider,
   processChildContext,
+  emptyContextObject,
+  isContextProvider as isLegacyContextProvider,
 } from './ReactFiberContext';
 import { createFiberRoot } from './ReactFiberRoot';
 import * as ReactFiberDevToolsHook from './ReactFiberDevToolsHook';
 import {
   computeUniqueAsyncExpiration,
-  recalculateCurrentTime,
+  requestCurrentTime,
   computeExpirationForFiber,
   scheduleWork,
   requestWork,
@@ -52,10 +52,13 @@ import {
   syncUpdates,
   interactiveUpdates,
   flushInteractiveUpdates,
+  flushPassiveEffects,
 } from './ReactFiberScheduler';
 import { createUpdate, enqueueUpdate } from './ReactUpdateQueue';
 import ReactFiberInstrumentation from './ReactFiberInstrumentation';
-import ReactDebugCurrentFiber from './ReactDebugCurrentFiber';
+import * as ReactCurrentFiber from './ReactCurrentFiber';
+import { getStackByFiberInDevAndProd } from './ReactCurrentFiber';
+import { StrictMode } from './ReactTypeOfMode';
 
 type OpaqueRoot = FiberRoot;
 
@@ -77,23 +80,31 @@ type DevToolsConfig = {|
 |};
 
 let didWarnAboutNestedUpdates;
+let didWarnAboutFindNodeInStrictMode;
 
 if (__DEV__) {
   didWarnAboutNestedUpdates = false;
+  didWarnAboutFindNodeInStrictMode = {};
 }
 
 function getContextForSubtree(
   parentComponent: ?React$Component<any, any>,
 ): Object {
   if (!parentComponent) {
-    return emptyObject;
+    return emptyContextObject;
   }
 
   const fiber = ReactInstanceMap.get(parentComponent);
   const parentContext = findCurrentUnmaskedContext(fiber);
-  return isContextProvider(fiber)
-    ? processChildContext(fiber, parentContext)
-    : parentContext;
+
+  if (fiber.tag === ClassComponent) {
+    const Component = fiber.type;
+    if (isLegacyContextProvider(Component)) {
+      return processChildContext(fiber, Component, parentContext);
+    }
+  }
+
+  return parentContext;
 }
 
 function scheduleRootUpdate(
@@ -104,18 +115,18 @@ function scheduleRootUpdate(
 ) {
   if (__DEV__) {
     if (
-      ReactDebugCurrentFiber.phase === 'render' &&
-      ReactDebugCurrentFiber.current !== null &&
+      ReactCurrentFiber.phase === 'render' &&
+      ReactCurrentFiber.current !== null &&
       !didWarnAboutNestedUpdates
     ) {
       didWarnAboutNestedUpdates = true;
-      warning(
+      warningWithoutStack(
         false,
         'Render methods should be a pure function of props and state; ' +
           'triggering nested component updates from render is not allowed. ' +
           'If necessary, trigger nested updates in componentDidUpdate.\n\n' +
           'Check the render method of %s.',
-        getComponentName(ReactDebugCurrentFiber.current) || 'Unknown',
+        getComponentName(ReactCurrentFiber.current.type) || 'Unknown',
       );
     }
   }
@@ -127,7 +138,7 @@ function scheduleRootUpdate(
 
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
-    warning(
+    warningWithoutStack(
       typeof callback === 'function',
       'render(...): Expected the last optional `callback` argument to be a ' +
         'function. Instead received: %s.',
@@ -135,9 +146,11 @@ function scheduleRootUpdate(
     );
     update.callback = callback;
   }
-  enqueueUpdate(current, update, expirationTime);
 
+  flushPassiveEffects();
+  enqueueUpdate(current, update);
   scheduleWork(current, expirationTime);
+
   return expirationTime;
 }
 
@@ -193,12 +206,73 @@ function findHostInstance(component: Object): PublicInstance | null {
   return hostFiber.stateNode;
 }
 
+function findHostInstanceWithWarning(
+  component: Object,
+  methodName: string,
+): PublicInstance | null {
+  if (__DEV__) {
+    const fiber = ReactInstanceMap.get(component);
+    if (fiber === undefined) {
+      if (typeof component.render === 'function') {
+        invariant(false, 'Unable to find node on an unmounted component.');
+      } else {
+        invariant(
+          false,
+          'Argument appears to not be a ReactComponent. Keys: %s',
+          Object.keys(component),
+        );
+      }
+    }
+    const hostFiber = findCurrentHostFiber(fiber);
+    if (hostFiber === null) {
+      return null;
+    }
+    if (hostFiber.mode & StrictMode) {
+      const componentName = getComponentName(fiber.type) || 'Component';
+      if (!didWarnAboutFindNodeInStrictMode[componentName]) {
+        didWarnAboutFindNodeInStrictMode[componentName] = true;
+        if (fiber.mode & StrictMode) {
+          warningWithoutStack(
+            false,
+            '%s is deprecated in StrictMode. ' +
+              '%s was passed an instance of %s which is inside StrictMode. ' +
+              'Instead, add a ref directly to the element you want to reference.' +
+              '\n%s' +
+              '\n\nLearn more about using refs safely here:' +
+              '\nhttps://fb.me/react-strict-mode-find-node',
+            methodName,
+            methodName,
+            componentName,
+            getStackByFiberInDevAndProd(hostFiber),
+          );
+        } else {
+          warningWithoutStack(
+            false,
+            '%s is deprecated in StrictMode. ' +
+              '%s was passed an instance of %s which renders StrictMode children. ' +
+              'Instead, add a ref directly to the element you want to reference.' +
+              '\n%s' +
+              '\n\nLearn more about using refs safely here:' +
+              '\nhttps://fb.me/react-strict-mode-find-node',
+            methodName,
+            methodName,
+            componentName,
+            getStackByFiberInDevAndProd(hostFiber),
+          );
+        }
+      }
+    }
+    return hostFiber.stateNode;
+  }
+  return findHostInstance(component);
+}
+
 export function createContainer(
   containerInfo: Container,
-  isAsync: boolean,
+  isConcurrent: boolean,
   hydrate: boolean,
 ): OpaqueRoot {
-  return createFiberRoot(containerInfo, isAsync, hydrate);
+  return createFiberRoot(containerInfo, isConcurrent, hydrate);
 }
 
 export function updateContainer(
@@ -208,7 +282,7 @@ export function updateContainer(
   callback: ?Function,
 ): ExpirationTime {
   const current = container.current;
-  const currentTime = recalculateCurrentTime();
+  const currentTime = requestCurrentTime();
   const expirationTime = computeExpirationForFiber(currentTime, current);
   return updateContainerAtExpirationTime(
     element,
@@ -249,6 +323,8 @@ export function getPublicRootInstance(
 }
 
 export { findHostInstance };
+
+export { findHostInstanceWithWarning };
 
 export function findHostInstanceWithNoPortals(
   fiber: Fiber,

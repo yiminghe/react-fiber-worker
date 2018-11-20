@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -92,8 +92,8 @@ import {
   Callback,
   ShouldCapture,
   DidCapture,
-} from '../../shared/ReactTypeOfSideEffect';
-import { ClassComponent } from '../../shared/ReactTypeOfWork';
+} from '../../shared/ReactSideEffectTags';
+import { ClassComponent } from '../../shared/ReactWorkTags';
 
 import {
   debugRenderPhaseSideEffects,
@@ -102,8 +102,8 @@ import {
 
 import { StrictMode } from './ReactTypeOfMode';
 
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import invariant from '../../shared/invariant';
+import warningWithoutStack from '../../shared/warningWithoutStack';
 
 export type Update<State> = {
   expirationTime: ExpirationTime,
@@ -117,7 +117,6 @@ export type Update<State> = {
 };
 
 export type UpdateQueue<State> = {
-  expirationTime: ExpirationTime,
   baseState: State,
 
   firstUpdate: Update<State> | null,
@@ -156,7 +155,6 @@ if (__DEV__) {
 
 export function createUpdateQueue<State>(baseState: State): UpdateQueue<State> {
   const queue: UpdateQueue<State> = {
-    expirationTime: NoWork,
     baseState,
     firstUpdate: null,
     lastUpdate: null,
@@ -174,7 +172,6 @@ function cloneUpdateQueue<State>(
   currentQueue: UpdateQueue<State>,
 ): UpdateQueue<State> {
   const queue: UpdateQueue<State> = {
-    expirationTime: currentQueue.expirationTime,
     baseState: currentQueue.baseState,
     firstUpdate: currentQueue.firstUpdate,
     lastUpdate: currentQueue.lastUpdate,
@@ -209,7 +206,6 @@ export function createUpdate(expirationTime: ExpirationTime): Update<*> {
 function appendUpdateToQueue<State>(
   queue: UpdateQueue<State>,
   update: Update<State>,
-  expirationTime: ExpirationTime,
 ) {
   // Append the update to the end of the list.
   if (queue.lastUpdate === null) {
@@ -219,21 +215,9 @@ function appendUpdateToQueue<State>(
     queue.lastUpdate.next = update;
     queue.lastUpdate = update;
   }
-  if (
-    queue.expirationTime === NoWork ||
-    queue.expirationTime > expirationTime
-  ) {
-    // The incoming update has the earliest expiration of any update in the
-    // queue. Update the queue's expiration time.
-    queue.expirationTime = expirationTime;
-  }
 }
 
-export function enqueueUpdate<State>(
-  fiber: Fiber,
-  update: Update<State>,
-  expirationTime: ExpirationTime,
-) {
+export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   // Update queues are created lazily.
   const alternate = fiber.alternate;
   let queue1;
@@ -271,19 +255,19 @@ export function enqueueUpdate<State>(
   }
   if (queue2 === null || queue1 === queue2) {
     // There's only a single queue.
-    appendUpdateToQueue(queue1, update, expirationTime);
+    appendUpdateToQueue(queue1, update);
   } else {
     // There are two queues. We need to append the update to both queues,
     // while accounting for the persistent structure of the list — we don't
     // want the same update to be added multiple times.
     if (queue1.lastUpdate === null || queue2.lastUpdate === null) {
       // One of the queues is not empty. We must add the update to both queues.
-      appendUpdateToQueue(queue1, update, expirationTime);
-      appendUpdateToQueue(queue2, update, expirationTime);
+      appendUpdateToQueue(queue1, update);
+      appendUpdateToQueue(queue2, update);
     } else {
       // Both queues are non-empty. The last update is the same in both lists,
       // because of structural sharing. So, only append to one of the lists.
-      appendUpdateToQueue(queue1, update, expirationTime);
+      appendUpdateToQueue(queue1, update);
       // But we still need to update the `lastUpdate` pointer of queue2.
       queue2.lastUpdate = update;
     }
@@ -296,7 +280,7 @@ export function enqueueUpdate<State>(
         (queue2 !== null && currentlyProcessingQueue === queue2)) &&
       !didWarnUpdateInsideUpdate
     ) {
-      warning(
+      warningWithoutStack(
         false,
         'An update (setState, replaceState, or forceUpdate) was scheduled ' +
           'from inside an update function. Update functions should be pure, ' +
@@ -311,7 +295,6 @@ export function enqueueUpdate<State>(
 export function enqueueCapturedUpdate<State>(
   workInProgress: Fiber,
   update: Update<State>,
-  renderExpirationTime: ExpirationTime,
 ) {
   // Captured updates go into a separate list, and only on the work-in-
   // progress queue.
@@ -337,14 +320,6 @@ export function enqueueCapturedUpdate<State>(
   } else {
     workInProgressQueue.lastCapturedUpdate.next = update;
     workInProgressQueue.lastCapturedUpdate = update;
-  }
-  if (
-    workInProgressQueue.expirationTime === NoWork ||
-    workInProgressQueue.expirationTime > renderExpirationTime
-  ) {
-    // The incoming update has the earliest expiration of any update in the
-    // queue. Update the queue's expiration time.
-    workInProgressQueue.expirationTime = renderExpirationTime;
   }
 }
 
@@ -438,14 +413,6 @@ export function processUpdateQueue<State>(
 ): void {
   hasForceUpdate = false;
 
-  if (
-    queue.expirationTime === NoWork ||
-    queue.expirationTime > renderExpirationTime
-  ) {
-    // Insufficient priority. Bailout.
-    return;
-  }
-
   queue = ensureWorkInProgressQueueIsAClone(workInProgress, queue);
 
   if (__DEV__) {
@@ -462,7 +429,7 @@ export function processUpdateQueue<State>(
   let resultState = newBaseState;
   while (update !== null) {
     const updateExpirationTime = update.expirationTime;
-    if (updateExpirationTime > renderExpirationTime) {
+    if (updateExpirationTime < renderExpirationTime) {
       // This update does not have sufficient priority. Skip it.
       if (newFirstUpdate === null) {
         // This is the first skipped update. It will be the first update in
@@ -474,10 +441,7 @@ export function processUpdateQueue<State>(
       }
       // Since this update will remain in the list, update the remaining
       // expiration time.
-      if (
-        newExpirationTime === NoWork ||
-        newExpirationTime > updateExpirationTime
-      ) {
+      if (newExpirationTime < updateExpirationTime) {
         newExpirationTime = updateExpirationTime;
       }
     } else {
@@ -513,7 +477,7 @@ export function processUpdateQueue<State>(
   update = queue.firstCapturedUpdate;
   while (update !== null) {
     const updateExpirationTime = update.expirationTime;
-    if (updateExpirationTime > renderExpirationTime) {
+    if (updateExpirationTime < renderExpirationTime) {
       // This update does not have sufficient priority. Skip it.
       if (newFirstCapturedUpdate === null) {
         // This is the first skipped captured update. It will be the first
@@ -527,10 +491,7 @@ export function processUpdateQueue<State>(
       }
       // Since this update will remain in the list, update the remaining
       // expiration time.
-      if (
-        newExpirationTime === NoWork ||
-        newExpirationTime > updateExpirationTime
-      ) {
+      if (newExpirationTime < updateExpirationTime) {
         newExpirationTime = updateExpirationTime;
       }
     } else {
@@ -577,8 +538,15 @@ export function processUpdateQueue<State>(
   queue.baseState = newBaseState;
   queue.firstUpdate = newFirstUpdate;
   queue.firstCapturedUpdate = newFirstCapturedUpdate;
-  queue.expirationTime = newExpirationTime;
 
+  // Set the remaining expiration time to be whatever is remaining in the queue.
+  // This should be fine because the only two other things that contribute to
+  // expiration time are props and context. We're already in the middle of the
+  // begin phase by the time we start processing the queue, so we've already
+  // dealt with the props. Context in components that specify
+  // shouldComponentUpdate is tricky; but we'll have to account for
+  // that regardless.
+  workInProgress.expirationTime = newExpirationTime;
   workInProgress.memoizedState = resultState;
 
   if (__DEV__) {
@@ -625,19 +593,17 @@ export function commitUpdateQueue<State>(
   }
 
   // Commit the effects
-  let effect = finishedQueue.firstEffect;
+  commitUpdateEffects(finishedQueue.firstEffect, instance);
   finishedQueue.firstEffect = finishedQueue.lastEffect = null;
-  while (effect !== null) {
-    const callback = effect.callback;
-    if (callback !== null) {
-      effect.callback = null;
-      callCallback(callback, instance);
-    }
-    effect = effect.nextEffect;
-  }
 
-  effect = finishedQueue.firstCapturedEffect;
+  commitUpdateEffects(finishedQueue.firstCapturedEffect, instance);
   finishedQueue.firstCapturedEffect = finishedQueue.lastCapturedEffect = null;
+}
+
+function commitUpdateEffects<State>(
+  effect: Update<State> | null,
+  instance: any,
+): void {
   while (effect !== null) {
     const callback = effect.callback;
     if (callback !== null) {

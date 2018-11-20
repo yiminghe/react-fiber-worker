@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -10,7 +10,7 @@
 import type { Fiber } from './ReactFiber';
 import type { FiberRoot } from './ReactFiberRoot';
 
-import warning from 'fbjs/lib/warning';
+import warningWithoutStack from '../../shared/warningWithoutStack';
 
 declare var __REACT_DEVTOOLS_GLOBAL_HOOK__: Object | void;
 
@@ -25,11 +25,18 @@ function catchErrors(fn) {
     } catch (err) {
       if (__DEV__ && !hasLoggedError) {
         hasLoggedError = true;
-        warning(false, 'React DevTools encountered an error: %s', err);
+        warningWithoutStack(
+          false,
+          'React DevTools encountered an error: %s',
+          err,
+        );
       }
     }
   };
 }
+
+export const isDevToolsPresent =
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined';
 
 export function injectInternals(internals: Object): boolean {
   if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === 'undefined') {
@@ -45,7 +52,7 @@ export function injectInternals(internals: Object): boolean {
   }
   if (!hook.supportsFiber) {
     if (__DEV__) {
-      warning(
+      warningWithoutStack(
         false,
         'The installed version of React DevTools is too old and will not work ' +
           'with the current version of React. Please update React DevTools. ' +
@@ -67,7 +74,11 @@ export function injectInternals(internals: Object): boolean {
   } catch (err) {
     // Catch all errors because it is unsafe to throw during initialization.
     if (__DEV__) {
-      warning(false, 'React DevTools encountered an error: %s.', err);
+      warningWithoutStack(
+        false,
+        'React DevTools encountered an error: %s.',
+        err,
+      );
     }
   }
   // DevTools exists

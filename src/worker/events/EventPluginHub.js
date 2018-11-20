@@ -1,13 +1,13 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  * @flow
  */
 
-import ReactErrorUtils from '../shared/ReactErrorUtils';
-import invariant from 'fbjs/lib/invariant';
+import { rethrowCaughtError } from '../shared/ReactErrorUtils';
+import invariant from '../shared/invariant';
 
 import {
   injectEventPluginOrder,
@@ -37,26 +37,19 @@ let eventQueue: ?(Array<ReactSyntheticEvent> | ReactSyntheticEvent) = null;
  * Dispatches an event and releases it back into the pool, unless persistent.
  *
  * @param {?object} event Synthetic event to be dispatched.
- * @param {boolean} simulated If the event is simulated (changes exn behavior)
  * @private
  */
-const executeDispatchesAndRelease = function(
-  event: ReactSyntheticEvent,
-  simulated: boolean,
-) {
+const executeDispatchesAndRelease = function(event: ReactSyntheticEvent) {
   if (event) {
-    executeDispatchesInOrder(event, simulated);
+    executeDispatchesInOrder(event);
 
     if (!event.isPersistent()) {
       event.constructor.release(event);
     }
   }
 };
-const executeDispatchesAndReleaseSimulated = function(e) {
-  return executeDispatchesAndRelease(e, true);
-};
 const executeDispatchesAndReleaseTopLevel = function(e) {
-  return executeDispatchesAndRelease(e, false);
+  return executeDispatchesAndRelease(e);
 };
 
 function isInteractive(tag) {
@@ -167,7 +160,7 @@ export function getListener(inst: Fiber, registrationName: string) {
  */
 function extractEvents(
   topLevelType: TopLevelType,
-  targetInst: Fiber,
+  targetInst: null | Fiber,
   nativeEvent: AnyNativeEvent,
   nativeEventTarget: EventTarget,
 ): Array<ReactSyntheticEvent> | ReactSyntheticEvent | null {
@@ -192,7 +185,6 @@ function extractEvents(
 
 export function runEventsInBatch(
   events: Array<ReactSyntheticEvent> | ReactSyntheticEvent | null,
-  simulated: boolean,
 ) {
   if (events !== null) {
     eventQueue = accumulateInto(eventQueue, events);
@@ -207,29 +199,19 @@ export function runEventsInBatch(
     return;
   }
 
-  if (simulated) {
-    forEachAccumulated(
-      processingEventQueue,
-      executeDispatchesAndReleaseSimulated,
-    );
-  } else {
-    forEachAccumulated(
-      processingEventQueue,
-      executeDispatchesAndReleaseTopLevel,
-    );
-  }
+  forEachAccumulated(processingEventQueue, executeDispatchesAndReleaseTopLevel);
   invariant(
     !eventQueue,
     'processEventQueue(): Additional events were enqueued while processing ' +
       'an event queue. Support for this has not yet been implemented.',
   );
   // This would be a good time to rethrow if any of the event handlers threw.
-  ReactErrorUtils.rethrowCaughtError();
+  rethrowCaughtError();
 }
 
 export function runExtractedEventsInBatch(
   topLevelType: TopLevelType,
-  targetInst: Fiber,
+  targetInst: null | Fiber,
   nativeEvent: AnyNativeEvent,
   nativeEventTarget: EventTarget,
 ) {
@@ -239,5 +221,5 @@ export function runExtractedEventsInBatch(
     nativeEvent,
     nativeEventTarget,
   );
-  runEventsInBatch(events, false);
+  runEventsInBatch(events);
 }

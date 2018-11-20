@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -65,6 +65,7 @@ describe('ReactIncrementalReflection', () => {
     expect(ReactNoop.flush).toWarnDev(
       'componentWillMount: Please update the following components ' +
         'to use componentDidMount instead: Component',
+      { withoutStack: true },
     );
 
     expect(ops).toEqual(['componentDidMount', true]);
@@ -106,6 +107,7 @@ describe('ReactIncrementalReflection', () => {
     expect(ReactNoop.flush).toWarnDev(
       'componentWillMount: Please update the following components ' +
         'to use componentDidMount instead: Component',
+      { withoutStack: true },
     );
 
     expect(ops).toEqual(['Component']);
@@ -136,22 +138,35 @@ describe('ReactIncrementalReflection', () => {
 
     let classInstance = null;
 
+    function findInstance(inst) {
+      // We ignore warnings fired by findInstance because we are testing
+      // that the actual behavior still works as expected even though it
+      // is deprecated.
+      let oldConsoleError = console.error;
+      console.error = jest.fn();
+      try {
+        return ReactNoop.findInstance(inst);
+      } finally {
+        console.error = oldConsoleError;
+      }
+    }
+
     class Component extends React.Component {
       UNSAFE_componentWillMount() {
         classInstance = this;
-        ops.push('componentWillMount', ReactNoop.findInstance(this));
+        ops.push('componentWillMount', findInstance(this));
       }
       componentDidMount() {
-        ops.push('componentDidMount', ReactNoop.findInstance(this));
+        ops.push('componentDidMount', findInstance(this));
       }
       UNSAFE_componentWillUpdate() {
-        ops.push('componentWillUpdate', ReactNoop.findInstance(this));
+        ops.push('componentWillUpdate', findInstance(this));
       }
       componentDidUpdate() {
-        ops.push('componentDidUpdate', ReactNoop.findInstance(this));
+        ops.push('componentDidUpdate', findInstance(this));
       }
       componentWillUnmount() {
-        ops.push('componentWillUnmount', ReactNoop.findInstance(this));
+        ops.push('componentWillUnmount', findInstance(this));
       }
       render() {
         ops.push('render');
@@ -191,19 +206,20 @@ describe('ReactIncrementalReflection', () => {
     expect(classInstance).toBeDefined();
     // The instance has been complete but is still not committed so it should
     // not find any host nodes in it.
-    expect(ReactNoop.findInstance(classInstance)).toBe(null);
+    expect(findInstance(classInstance)).toBe(null);
 
     expect(ReactNoop.flush).toWarnDev(
       'componentWillMount: Please update the following components ' +
         'to use componentDidMount instead: Component' +
         '\n\ncomponentWillUpdate: Please update the following components ' +
         'to use componentDidUpdate instead: Component',
+      { withoutStack: true },
     );
 
     const hostSpan = classInstance.span;
     expect(hostSpan).toBeDefined();
 
-    expect(ReactNoop.findInstance(classInstance)).toBe(hostSpan);
+    expect(findInstance(classInstance)).toBe(hostSpan);
 
     expect(ops).toEqual(['componentDidMount', hostSpan]);
 

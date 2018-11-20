@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -20,17 +20,19 @@ describe('ReactFragment', () => {
     ReactNoop = require('react-noop-renderer');
   });
 
-  function span(prop) {
-    return { type: 'span', children: [], prop };
-  }
-
-  function text(val) {
-    return { text: val };
-  }
-
   function div(...children) {
-    children = children.map(c => (typeof c === 'string' ? { text: c } : c));
-    return { type: 'div', children, prop: undefined };
+    children = children.map(
+      c => (typeof c === 'string' ? { text: c, hidden: false } : c),
+    );
+    return { type: 'div', children, prop: undefined, hidden: false };
+  }
+
+  function span(prop) {
+    return { type: 'span', children: [], prop, hidden: false };
+  }
+
+  function text(t) {
+    return { text: t, hidden: false };
   }
 
   it('should render a single child via noop renderer', () => {

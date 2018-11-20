@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,13 +7,13 @@
  * @flow
  */
 
-import type { Fiber } from '../../react-reconciler/src/ReactFiber';
+import type { Fiber } from './ReactFiber';
 
-import invariant from 'fbjs/lib/invariant';
-import warning from 'fbjs/lib/warning';
+import invariant from '../../shared/invariant';
+import warningWithoutStack from '../../shared/warningWithoutStack';
 
 import * as ReactInstanceMap from '../../shared/ReactInstanceMap';
-import { ReactCurrentOwner } from '../../shared/ReactGlobalSharedState';
+import ReactSharedInternals from '../../shared/ReactSharedInternals';
 import getComponentName from '../../shared/getComponentName';
 import {
   ClassComponent,
@@ -21,8 +21,10 @@ import {
   HostRoot,
   HostPortal,
   HostText,
-} from '../../shared/ReactTypeOfWork';
-import { NoEffect, Placement } from '../../shared/ReactTypeOfSideEffect';
+} from '../../shared/ReactWorkTags';
+import { NoEffect, Placement } from '../../shared/ReactSideEffectTags';
+
+const ReactCurrentOwner = ReactSharedInternals.ReactCurrentOwner;
 
 const MOUNTING = 1;
 const MOUNTED = 2;
@@ -67,14 +69,14 @@ export function isMounted(component: React$Component<any, any>): boolean {
     if (owner !== null && owner.tag === ClassComponent) {
       const ownerFiber: Fiber = owner;
       const instance = ownerFiber.stateNode;
-      warning(
+      warningWithoutStack(
         instance._warnedAboutRefsInRender,
         '%s is accessing isMounted inside its render() function. ' +
           'render() should be a pure function of props and state. It should ' +
           'never access something that requires stale data from the previous ' +
           'render, such as refs. Move this logic to componentDidMount and ' +
           'componentDidUpdate instead.',
-        getComponentName(ownerFiber) || 'A component',
+        getComponentName(ownerFiber.type) || 'A component',
       );
       instance._warnedAboutRefsInRender = true;
     }

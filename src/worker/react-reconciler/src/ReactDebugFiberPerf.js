@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -20,7 +20,8 @@ import {
   ContextProvider,
   ContextConsumer,
   Mode,
-} from '../../shared/ReactTypeOfWork';
+  SuspenseComponent,
+} from '../../shared/ReactWorkTags';
 
 type MeasurementPhase =
   | 'componentWillMount'
@@ -121,7 +122,7 @@ const beginFiberMark = (
   fiber: Fiber,
   phase: MeasurementPhase | null,
 ): boolean => {
-  const componentName = getComponentName(fiber) || 'Unknown';
+  const componentName = getComponentName(fiber.type) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -140,7 +141,7 @@ const beginFiberMark = (
 };
 
 const clearFiberMark = (fiber: Fiber, phase: MeasurementPhase | null) => {
-  const componentName = getComponentName(fiber) || 'Unknown';
+  const componentName = getComponentName(fiber.type) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -153,7 +154,7 @@ const endFiberMark = (
   phase: MeasurementPhase | null,
   warning: string | null,
 ) => {
-  const componentName = getComponentName(fiber) || 'Unknown';
+  const componentName = getComponentName(fiber.type) || 'Unknown';
   const debugID = ((fiber._debugID: any): number);
   const isMounted = fiber.alternate !== null;
   const label = getFiberLabel(componentName, isMounted, phase);
@@ -315,7 +316,10 @@ export function stopFailedWorkTimer(fiber: Fiber): void {
       return;
     }
     fiber._debugIsCurrentlyTiming = false;
-    const warning = 'An error was thrown inside this error boundary';
+    const warning =
+      fiber.tag === SuspenseComponent
+        ? 'Rendering was suspended'
+        : 'An error was thrown inside this error boundary';
     endFiberMark(fiber, null, warning);
   }
 }
@@ -378,7 +382,7 @@ export function stopWorkLoopTimer(
       if (interruptedBy.tag === HostRoot) {
         warning = 'A top-level update interrupted the previous render';
       } else {
-        const componentName = getComponentName(interruptedBy) || 'Unknown';
+        const componentName = getComponentName(interruptedBy.type) || 'Unknown';
         warning = `An update to ${componentName} interrupted the previous render`;
       }
     } else if (commitCountInCurrentWorkLoop > 1) {

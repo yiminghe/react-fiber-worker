@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -13,15 +13,17 @@ import type {
   ReactPortal,
   RefObject,
 } from '../../shared/ReactTypes';
-import type { TypeOfWork } from '../../shared/ReactTypeOfWork';
+import type { WorkTag } from '../../shared/ReactWorkTags';
 import type { TypeOfMode } from './ReactTypeOfMode';
-import type { TypeOfSideEffect } from '../../shared/ReactTypeOfSideEffect';
+import type { SideEffectTag } from '../../shared/ReactSideEffectTags';
 import type { ExpirationTime } from './ReactFiberExpirationTime';
 import type { UpdateQueue } from './ReactUpdateQueue';
+import type { ContextDependency } from './ReactFiberNewContext';
 
-import invariant from 'fbjs/lib/invariant';
+import invariant from '../../shared/invariant';
+import warningWithoutStack from '../../shared/warningWithoutStack';
 import { enableProfilerTimer } from '../../shared/ReactFeatureFlags';
-import { NoEffect } from '../../shared/ReactTypeOfSideEffect';
+import { NoEffect } from '../../shared/ReactSideEffectTags';
 import {
   IndeterminateComponent,
   ClassComponent,
@@ -35,14 +37,18 @@ import {
   ContextProvider,
   ContextConsumer,
   Profiler,
-  TimeoutComponent,
-} from '../../shared/ReactTypeOfWork';
+  SuspenseComponent,
+  FunctionComponent,
+  MemoComponent,
+  LazyComponent,
+} from '../../shared/ReactWorkTags';
 import getComponentName from '../../shared/getComponentName';
 
+import { isDevToolsPresent } from './ReactFiberDevToolsHook';
 import { NoWork } from './ReactFiberExpirationTime';
 import {
   NoContext,
-  AsyncMode,
+  ConcurrentMode,
   ProfileMode,
   StrictMode,
 } from './ReactTypeOfMode';
@@ -53,8 +59,10 @@ import {
   REACT_PROFILER_TYPE,
   REACT_PROVIDER_TYPE,
   REACT_CONTEXT_TYPE,
-  REACT_ASYNC_MODE_TYPE,
-  REACT_TIMEOUT_TYPE,
+  REACT_CONCURRENT_MODE_TYPE,
+  REACT_SUSPENSE_TYPE,
+  REACT_MEMO_TYPE,
+  REACT_LAZY_TYPE,
 } from '../../shared/ReactSymbols';
 
 let hasBadMapPolyfill;
@@ -90,12 +98,16 @@ export type Fiber = {|
   // minimize the number of objects created during the initial render.
 
   // Tag identifying the type of fiber.
-  tag: TypeOfWork,
+  tag: WorkTag,
 
   // Unique identifier of this child.
   key: null | string,
 
-  // The function/class/module associated with this fiber.
+  // The value of element.type which is used to preserve the identity during
+  // reconciliation of this child.
+  elementType: any,
+
+  // The resolved function/class/ associated with this fiber.
   type: any,
 
   // The local state associated with this fiber.
@@ -132,8 +144,11 @@ export type Fiber = {|
   // The state used to create the output
   memoizedState: any,
 
+  // A linked-list of contexts that this fiber depends on
+  firstContextDependency: ContextDependency<mixed> | null,
+
   // Bitfield that describes properties about the fiber and its subtree. E.g.
-  // the AsyncMode flag indicates whether the subtree should be async-by-
+  // the ConcurrentMode flag indicates whether the subtree should be async-by-
   // default. When a fiber is created, it inherits the mode of its
   // parent. Additional flags can be set at creation time, but after that the
   // value should remain unchanged throughout the fiber's lifetime, particularly
@@ -141,7 +156,7 @@ export type Fiber = {|
   mode: TypeOfMode,
 
   // Effect
-  effectTag: TypeOfSideEffect,
+  effectTag: SideEffectTag,
 
   // Singly linked list fast path to the next fiber with side-effects.
   nextEffect: Fiber | null,
@@ -153,8 +168,11 @@ export type Fiber = {|
   lastEffect: Fiber | null,
 
   // Represents a time in the future by which this work should be completed.
-  // This is also used to quickly determine if a subtree has no pending changes.
+  // Does not include work found in its subtree.
   expirationTime: ExpirationTime,
+
+  // This is used to quickly determine if a subtree has no pending changes.
+  childExpirationTime: ExpirationTime,
 
   // This is a pooled version of a Fiber. Every fiber that gets updated will
   // eventually have a pair. There are cases when we can clean up pairs to save
@@ -163,6 +181,7 @@ export type Fiber = {|
 
   // Time spent rendering this Fiber and its descendants for the current update.
   // This tells us how well the tree makes use of sCU for memoization.
+  // It is reset to 0 each time we render and only updated when we don't bailout.
   // This field is only set when the enableProfilerTimer flag is enabled.
   actualDuration?: number,
 
@@ -174,12 +193,12 @@ export type Fiber = {|
   // Duration of the most recent render time for this Fiber.
   // This value is not updated when we bailout for memoization purposes.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  selfBaseTime?: number,
+  selfBaseDuration?: number,
 
   // Sum of base times for all descedents of this Fiber.
   // This value bubbles up during the "complete" phase.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  treeBaseTime?: number,
+  treeBaseDuration?: number,
 
   // Conceptual aliases
   // workInProgress : Fiber ->  alternate The alternate used for reuse happens
@@ -198,7 +217,7 @@ if (__DEV__) {
 }
 
 function FiberNode(
-  tag: TypeOfWork,
+  tag: WorkTag,
   pendingProps: mixed,
   key: null | string,
   mode: TypeOfMode,
@@ -206,6 +225,7 @@ function FiberNode(
   // Instance
   this.tag = tag;
   this.key = key;
+  this.elementType = null;
   this.type = null;
   this.stateNode = null;
 
@@ -221,6 +241,7 @@ function FiberNode(
   this.memoizedProps = null;
   this.updateQueue = null;
   this.memoizedState = null;
+  this.firstContextDependency = null;
 
   this.mode = mode;
 
@@ -232,14 +253,15 @@ function FiberNode(
   this.lastEffect = null;
 
   this.expirationTime = NoWork;
+  this.childExpirationTime = NoWork;
 
   this.alternate = null;
 
   if (enableProfilerTimer) {
     this.actualDuration = 0;
-    this.actualStartTime = 0;
-    this.selfBaseTime = 0;
-    this.treeBaseTime = 0;
+    this.actualStartTime = -1;
+    this.selfBaseDuration = 0;
+    this.treeBaseDuration = 0;
   }
 
   if (__DEV__) {
@@ -267,7 +289,7 @@ function FiberNode(
 // 5) It should be easy to port this to a C struct and keep a C implementation
 //    compatible.
 const createFiber = function(
-  tag: TypeOfWork,
+  tag: WorkTag,
   pendingProps: mixed,
   key: null | string,
   mode: TypeOfMode,
@@ -276,8 +298,32 @@ const createFiber = function(
   return new FiberNode(tag, pendingProps, key, mode);
 };
 
-function shouldConstruct(Component) {
-  return !!(Component.prototype && Component.prototype.isReactComponent);
+function shouldConstruct(Component: Function) {
+  const prototype = Component.prototype;
+  return !!(prototype && prototype.isReactComponent);
+}
+
+export function isSimpleFunctionComponent(type: any) {
+  return (
+    typeof type === 'function' &&
+    !shouldConstruct(type) &&
+    type.defaultProps === undefined
+  );
+}
+
+export function resolveLazyComponentTag(Component: Function): WorkTag {
+  if (typeof Component === 'function') {
+    return shouldConstruct(Component) ? ClassComponent : FunctionComponent;
+  } else if (Component !== undefined && Component !== null) {
+    const $$typeof = Component.$$typeof;
+    if ($$typeof === REACT_FORWARD_REF_TYPE) {
+      return ForwardRef;
+    }
+    if ($$typeof === REACT_MEMO_TYPE) {
+      return MemoComponent;
+    }
+  }
+  return IndeterminateComponent;
 }
 
 // This is used to create an alternate fiber to do work on.
@@ -299,6 +345,7 @@ export function createWorkInProgress(
       current.key,
       current.mode,
     );
+    workInProgress.elementType = current.elementType;
     workInProgress.type = current.type;
     workInProgress.stateNode = current.stateNode;
 
@@ -329,16 +376,18 @@ export function createWorkInProgress(
       // This has the downside of resetting values for different priority renders,
       // But works for yielding (the common case) and should support resuming.
       workInProgress.actualDuration = 0;
-      workInProgress.actualStartTime = 0;
+      workInProgress.actualStartTime = -1;
     }
   }
 
-  workInProgress.expirationTime = expirationTime;
+  workInProgress.childExpirationTime = current.childExpirationTime;
+  workInProgress.expirationTime = current.expirationTime;
 
   workInProgress.child = current.child;
   workInProgress.memoizedProps = current.memoizedProps;
   workInProgress.memoizedState = current.memoizedState;
   workInProgress.updateQueue = current.updateQueue;
+  workInProgress.firstContextDependency = current.firstContextDependency;
 
   // These will be overridden during the parent's reconciliation
   workInProgress.sibling = current.sibling;
@@ -346,16 +395,130 @@ export function createWorkInProgress(
   workInProgress.ref = current.ref;
 
   if (enableProfilerTimer) {
-    workInProgress.selfBaseTime = current.selfBaseTime;
-    workInProgress.treeBaseTime = current.treeBaseTime;
+    workInProgress.selfBaseDuration = current.selfBaseDuration;
+    workInProgress.treeBaseDuration = current.treeBaseDuration;
   }
 
   return workInProgress;
 }
 
-export function createHostRootFiber(isAsync: boolean): Fiber {
-  const mode = isAsync ? AsyncMode | StrictMode : NoContext;
+export function createHostRootFiber(isConcurrent: boolean): Fiber {
+  let mode = isConcurrent ? ConcurrentMode | StrictMode : NoContext;
+
+  if (enableProfilerTimer && isDevToolsPresent) {
+    // Always collect profile timings when DevTools are present.
+    // This enables DevTools to start capturing timing at any point–
+    // Without some nodes in the tree having empty base times.
+    mode |= ProfileMode;
+  }
+
   return createFiber(HostRoot, null, null, mode);
+}
+
+export function createFiberFromTypeAndProps(
+  type: any, // React$ElementType
+  key: null | string,
+  pendingProps: any,
+  owner: null | Fiber,
+  mode: TypeOfMode,
+  expirationTime: ExpirationTime,
+): Fiber {
+  let fiber;
+
+  let fiberTag = IndeterminateComponent;
+  // The resolved type is set if we know what the final type will be. I.e. it's not lazy.
+  let resolvedType = type;
+  if (typeof type === 'function') {
+    if (shouldConstruct(type)) {
+      fiberTag = ClassComponent;
+    }
+  } else if (typeof type === 'string') {
+    fiberTag = HostComponent;
+  } else {
+    getTag: switch (type) {
+      case REACT_FRAGMENT_TYPE:
+        return createFiberFromFragment(
+          pendingProps.children,
+          mode,
+          expirationTime,
+          key,
+        );
+      case REACT_CONCURRENT_MODE_TYPE:
+        return createFiberFromMode(
+          pendingProps,
+          mode | ConcurrentMode | StrictMode,
+          expirationTime,
+          key,
+        );
+      case REACT_STRICT_MODE_TYPE:
+        return createFiberFromMode(
+          pendingProps,
+          mode | StrictMode,
+          expirationTime,
+          key,
+        );
+      case REACT_PROFILER_TYPE:
+        return createFiberFromProfiler(pendingProps, mode, expirationTime, key);
+      case REACT_SUSPENSE_TYPE:
+        return createFiberFromSuspense(pendingProps, mode, expirationTime, key);
+      default: {
+        if (typeof type === 'object' && type !== null) {
+          switch (type.$$typeof) {
+            case REACT_PROVIDER_TYPE:
+              fiberTag = ContextProvider;
+              break getTag;
+            case REACT_CONTEXT_TYPE:
+              // This is a consumer
+              fiberTag = ContextConsumer;
+              break getTag;
+            case REACT_FORWARD_REF_TYPE:
+              fiberTag = ForwardRef;
+              break getTag;
+            case REACT_MEMO_TYPE:
+              fiberTag = MemoComponent;
+              break getTag;
+            case REACT_LAZY_TYPE:
+              fiberTag = LazyComponent;
+              resolvedType = null;
+              break getTag;
+          }
+        }
+        let info = '';
+        if (__DEV__) {
+          if (
+            type === undefined ||
+            (typeof type === 'object' &&
+              type !== null &&
+              Object.keys(type).length === 0)
+          ) {
+            info +=
+              ' You likely forgot to export your component from the file ' +
+              "it's defined in, or you might have mixed up default and " +
+              'named imports.';
+          }
+          const ownerName = owner ? getComponentName(owner.type) : null;
+          if (ownerName) {
+            info += '\n\nCheck the render method of `' + ownerName + '`.';
+          }
+        }
+        invariant(
+          false,
+          'Element type is invalid: expected a string (for built-in ' +
+            'components) or a class/function (for composite components) ' +
+            'but got: %s.%s',
+          type == null ? type : typeof type,
+          info,
+        );
+      }
+    }
+  }
+
+  fiber = createFiber(fiberTag, pendingProps, key, mode);
+  fiber.elementType = type;
+  fiber.type = resolvedType;
+  fiber.expirationTime = expirationTime;
+
+  return fiber;
 }
 
 export function createFiberFromElement(
@@ -367,101 +530,22 @@ export function createFiberFromElement(
   if (__DEV__) {
     owner = element._owner;
   }
-
-  let fiber;
   const type = element.type;
   const key = element.key;
-  let pendingProps = element.props;
-
-  let fiberTag;
-  if (typeof type === 'function') {
-    fiberTag = shouldConstruct(type) ? ClassComponent : IndeterminateComponent;
-  } else if (typeof type === 'string') {
-    fiberTag = HostComponent;
-  } else {
-    switch (type) {
-      case REACT_FRAGMENT_TYPE:
-        return createFiberFromFragment(
-          pendingProps.children,
-          mode,
-          expirationTime,
-          key,
-        );
-      case REACT_ASYNC_MODE_TYPE:
-        fiberTag = Mode;
-        mode |= AsyncMode | StrictMode;
-        break;
-      case REACT_STRICT_MODE_TYPE:
-        fiberTag = Mode;
-        mode |= StrictMode;
-        break;
-      case REACT_PROFILER_TYPE:
-        return createFiberFromProfiler(pendingProps, mode, expirationTime, key);
-      case REACT_TIMEOUT_TYPE:
-        fiberTag = TimeoutComponent;
-        // Suspense does not require async, but its children should be strict
-        // mode compatible.
-        mode |= StrictMode;
-        break;
-      default:
-        fiberTag = getFiberTagFromObjectType(type, owner);
-        break;
-    }
-  }
-
-  fiber = createFiber(fiberTag, pendingProps, key, mode);
-  fiber.type = type;
-  fiber.expirationTime = expirationTime;
-
+  const pendingProps = element.props;
+  const fiber = createFiberFromTypeAndProps(
+    type,
+    key,
+    pendingProps,
+    owner,
+    mode,
+    expirationTime,
+  );
   if (__DEV__) {
     fiber._debugSource = element._source;
     fiber._debugOwner = element._owner;
   }
-
   return fiber;
-}
-
-function getFiberTagFromObjectType(type, owner): TypeOfWork {
-  const $$typeof =
-    typeof type === 'object' && type !== null ? type.$$typeof : null;
-
-  switch ($$typeof) {
-    case REACT_PROVIDER_TYPE:
-      return ContextProvider;
-    case REACT_CONTEXT_TYPE:
-      // This is a consumer
-      return ContextConsumer;
-    case REACT_FORWARD_REF_TYPE:
-      return ForwardRef;
-    default: {
-      let info = '';
-      if (__DEV__) {
-        if (
-          type === undefined ||
-          (typeof type === 'object' &&
-            type !== null &&
-            Object.keys(type).length === 0)
-        ) {
-          info +=
-            ' You likely forgot to export your component from the file ' +
-            "it's defined in, or you might have mixed up default and " +
-            'named imports.';
-        }
-        const ownerName = owner ? getComponentName(owner) : null;
-        if (ownerName) {
-          info += '\n\nCheck the render method of `' + ownerName + '`.';
-        }
-      }
-      invariant(
-        false,
-        'Element type is invalid: expected a string (for built-in ' +
-          'components) or a class/function (for composite components) ' +
-          'but got: %s.%s',
-        type == null ? type : typeof type,
-        info,
-      );
-    }
-  }
 }
 
 export function createFiberFromFragment(
@@ -475,7 +559,7 @@ export function createFiberFromFragment(
   return fiber;
 }
 
-export function createFiberFromProfiler(
+function createFiberFromProfiler(
   pendingProps: any,
   mode: TypeOfMode,
   expirationTime: ExpirationTime,
@@ -486,7 +570,7 @@ export function createFiberFromProfiler(
       typeof pendingProps.id !== 'string' ||
       typeof pendingProps.onRender !== 'function'
     ) {
-      invariant(
+      warningWithoutStack(
         false,
         'Profiler must specify an "id" string and "onRender" function as props',
       );
@@ -494,9 +578,48 @@ export function createFiberFromProfiler(
   }
 
   const fiber = createFiber(Profiler, pendingProps, key, mode | ProfileMode);
+  // TODO: The Profiler fiber shouldn't have a type. It has a tag.
+  fiber.elementType = REACT_PROFILER_TYPE;
   fiber.type = REACT_PROFILER_TYPE;
   fiber.expirationTime = expirationTime;
 
+  return fiber;
+}
+
+function createFiberFromMode(
+  pendingProps: any,
+  mode: TypeOfMode,
+  expirationTime: ExpirationTime,
+  key: null | string,
+): Fiber {
+  const fiber = createFiber(Mode, pendingProps, key, mode);
+
+  // TODO: The Mode fiber shouldn't have a type. It has a tag.
+  const type =
+    (mode & ConcurrentMode) === NoContext
+      ? REACT_STRICT_MODE_TYPE
+      : REACT_CONCURRENT_MODE_TYPE;
+  fiber.elementType = type;
+  fiber.type = type;
+
+  fiber.expirationTime = expirationTime;
+  return fiber;
+}
+
+export function createFiberFromSuspense(
+  pendingProps: any,
+  mode: TypeOfMode,
+  expirationTime: ExpirationTime,
+  key: null | string,
+) {
+  const fiber = createFiber(SuspenseComponent, pendingProps, key, mode);
+
+  // TODO: The SuspenseComponent fiber shouldn't have a type. It has a tag.
+  const type = REACT_SUSPENSE_TYPE;
+  fiber.elementType = type;
+  fiber.type = type;
+
+  fiber.expirationTime = expirationTime;
   return fiber;
 }
 
@@ -512,6 +635,8 @@ export function createFiberFromText(
 
 export function createFiberFromHostInstanceForDeletion(): Fiber {
   const fiber = createFiber(HostComponent, null, null, NoContext);
+  // TODO: These should not need a type.
+  fiber.elementType = 'DELETED';
   fiber.type = 'DELETED';
   return fiber;
 }
@@ -551,6 +676,7 @@ export function assignFiberPropertiesInDEV(
 
   target.tag = source.tag;
   target.key = source.key;
+  target.elementType = source.elementType;
   target.type = source.type;
   target.stateNode = source.stateNode;
   target.return = source.return;
@@ -562,18 +688,20 @@ export function assignFiberPropertiesInDEV(
   target.memoizedProps = source.memoizedProps;
   target.updateQueue = source.updateQueue;
   target.memoizedState = source.memoizedState;
+  target.firstContextDependency = source.firstContextDependency;
   target.mode = source.mode;
   target.effectTag = source.effectTag;
   target.nextEffect = source.nextEffect;
   target.firstEffect = source.firstEffect;
   target.lastEffect = source.lastEffect;
   target.expirationTime = source.expirationTime;
+  target.childExpirationTime = source.childExpirationTime;
   target.alternate = source.alternate;
   if (enableProfilerTimer) {
     target.actualDuration = source.actualDuration;
     target.actualStartTime = source.actualStartTime;
-    target.selfBaseTime = source.selfBaseTime;
-    target.treeBaseTime = source.treeBaseTime;
+    target.selfBaseDuration = source.selfBaseDuration;
+    target.treeBaseDuration = source.treeBaseDuration;
   }
   target._debugID = source._debugID;
   target._debugSource = source._debugSource;

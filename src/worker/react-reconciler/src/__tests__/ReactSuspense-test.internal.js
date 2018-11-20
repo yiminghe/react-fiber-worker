@@ -1,994 +1,931 @@
 let React;
+let ReactTestRenderer;
 let ReactFeatureFlags;
-let Fragment;
-let ReactNoop;
-let SimpleCacheProvider;
-let Timeout;
+let ReactCache;
+let Suspense;
 
-let cache;
+// let JestReact;
+
 let TextResource;
 let textResourceShouldFail;
 
+// Additional tests can be found in ReactSuspenseWithNoopRenderer. Plan is
+// to gradually migrate those to this file.
 describe('ReactSuspense', () => {
   beforeEach(() => {
     jest.resetModules();
     ReactFeatureFlags = require('../../shared/ReactFeatureFlags');
     ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false;
-    ReactFeatureFlags.enableSuspense = true;
+    ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false;
+    ReactFeatureFlags.enableHooks = true;
     React = require('react');
-    Fragment = React.Fragment;
-    ReactNoop = require('react-noop-renderer');
-    SimpleCacheProvider = require('simple-cache-provider');
-    Timeout = React.Timeout;
+    ReactTestRenderer = require('react-test-renderer');
+    // JestReact = require('jest-react');
+    ReactCache = require('react-cache');
 
-    function invalidateCache() {
-      cache = SimpleCacheProvider.createCache(invalidateCache);
-    }
-    invalidateCache();
-    TextResource = SimpleCacheProvider.createResource(([text, ms = 0]) => {
-      return new Promise((resolve, reject) =>
-        setTimeout(() => {
-          if (textResourceShouldFail) {
-            ReactNoop.yield(`Promise rejected [${text}]`);
-            reject(new Error('Failed to load: ' + text));
-          } else {
-            ReactNoop.yield(`Promise resolved [${text}]`);
-            resolve(text);
-          }
-        }, ms),
-      );
-    }, ([text, ms]) => text);
+    Suspense = React.Suspense;
+
+    TextResource = ReactCache.unstable_createResource(
+      ([text, ms = 0]) => {
+        let listeners = null;
+        let status = 'pending';
+        let value = null;
+        return {
+          then(resolve, reject) {
+            switch (status) {
+              case 'pending': {
+                if (listeners === null) {
+                  listeners = [{ resolve, reject }];
+                  setTimeout(() => {
+                    if (textResourceShouldFail) {
+                      ReactTestRenderer.unstable_yield(
+                        `Promise rejected [${text}]`,
+                      );
+                      status = 'rejected';
+                      value = new Error('Failed to load: ' + text);
+                      listeners.forEach(listener => listener.reject(value));
+                    } else {
+                      ReactTestRenderer.unstable_yield(
+                        `Promise resolved [${text}]`,
+                      );
+                      status = 'resolved';
+                      value = text;
+                      listeners.forEach(listener => listener.resolve(value));
+                    }
+                  }, ms);
+                } else {
+                  listeners.push({ resolve, reject });
+                }
+                break;
+              }
+              case 'resolved': {
+                resolve(value);
+                break;
+              }
+              case 'rejected': {
+                reject(value);
+                break;
+              }
+            }
+          },
+        };
+      },
+      ([text, ms]) => text,
+    );
     textResourceShouldFail = false;
   });
 
-  function div(...children) {
-    children = children.map(c => (typeof c === 'string' ? { text: c } : c));
-    return { type: 'div', children, prop: undefined };
-  }
-
-  function span(prop) {
-    return { type: 'span', children: [], prop };
-  }
-
-  function advanceTimers(ms) {
-    // Note: This advances Jest's virtual time but not React's. Use
-    // ReactNoop.expire for that.
-    if (typeof ms !== 'number') {
-      throw new Error('Must specify ms');
-    }
-    jest.advanceTimersByTime(ms);
-    // Wait until the end of the current tick
-    return new Promise(resolve => {
-      setImmediate(resolve);
-    });
-  }
-
   function Text(props) {
-    ReactNoop.yield(props.text);
-    return <span prop={props.text} />;
+    ReactTestRenderer.unstable_yield(props.text);
+    return props.text;
   }
 
   function AsyncText(props) {
     const text = props.text;
     try {
-      TextResource.read(cache, [props.text, props.ms]);
-      ReactNoop.yield(text);
-      return <span prop={text} />;
+      TextResource.read([props.text, props.ms]);
+      ReactTestRenderer.unstable_yield(text);
+      return text;
     } catch (promise) {
       if (typeof promise.then === 'function') {
-        ReactNoop.yield(`Suspend! [${text}]`);
+        ReactTestRenderer.unstable_yield(`Suspend! [${text}]`);
       } else {
-        ReactNoop.yield(`Error! [${text}]`);
+        ReactTestRenderer.unstable_yield(`Error! [${text}]`);
       }
       throw promise;
     }
   }
 
-  function Fallback(props) {
-    return (
-      <Timeout ms={props.timeout}>
-        {didExpire => (didExpire ? props.placeholder : props.children)}
-      </Timeout>
-    );
-  }
-  it('suspends rendering and continues later', async () => {
+  it('suspends rendering and continues later', () => {
     function Bar(props) {
-      ReactNoop.yield('Bar');
+      ReactTestRenderer.unstable_yield('Bar');
       return props.children;
     }
 
     function Foo() {
-      ReactNoop.yield('Foo');
+      ReactTestRenderer.unstable_yield('Foo');
       return (
-        <Fallback>
+        <Suspense fallback={<Text text="Loading..." />}>
           <Bar>
             <AsyncText text="A" ms={100} />
             <Text text="B" />
           </Bar>
-        </Fallback>
+        </Suspense>
       );
     }
 
-    ReactNoop.render(<Foo />);
-    expect(ReactNoop.flush()).toEqual([
+    const root = ReactTestRenderer.create(<Foo />, {
+      unstable_isConcurrent: true,
+    });
+
+    expect(root).toFlushAndYield([
       'Foo',
       'Bar',
       // A suspends
       'Suspend! [A]',
       // But we keep rendering the siblings
       'B',
+      'Loading...',
     ]);
-    expect(ReactNoop.getChildren()).toEqual([]);
+    expect(root).toMatchRenderedOutput(null);
 
     // Flush some of the time
-    await advanceTimers(50);
+    jest.advanceTimersByTime(50);
     // Still nothing...
-    expect(ReactNoop.flush()).toEqual([]);
-    expect(ReactNoop.getChildren()).toEqual([]);
+    expect(root).toFlushWithoutYielding();
+    expect(root).toMatchRenderedOutput(null);
 
     // Flush the promise completely
-    await advanceTimers(50);
+    jest.advanceTimersByTime(50);
     // Renders successfully
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [A]',
-      'Foo',
-      'Bar',
-      'A',
-      'B',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('B')]);
+    expect(ReactTestRenderer).toHaveYielded(['Promise resolved [A]']);
+    expect(root).toFlushAndYield(['Foo', 'Bar', 'A', 'B']);
+    expect(root).toMatchRenderedOutput('AB');
   });
 
-  it('suspends siblings and later recovers each independently', async () => {
-    // Render two sibling Timeout components
-    ReactNoop.render(
-      <Fragment>
-        <Fallback timeout={1000} placeholder={<Text text="Loading A..." />}>
+  it('suspends siblings and later recovers each independently', () => {
+    // Render two sibling Suspense components
+    const root = ReactTestRenderer.create(
+      <React.Fragment>
+        <Suspense maxDuration={1000} fallback={<Text text="Loading A..." />}>
           <AsyncText text="A" ms={5000} />
-        </Fallback>
-        <Fallback timeout={3000} placeholder={<Text text="Loading B..." />}>
+        </Suspense>
+        <Suspense maxDuration={3000} fallback={<Text text="Loading B..." />}>
           <AsyncText text="B" ms={6000} />
-        </Fallback>
-      </Fragment>,
+        </Suspense>
+      </React.Fragment>,
+      {
+        unstable_isConcurrent: true,
+      },
     );
-    expect(ReactNoop.flush()).toEqual(['Suspend! [A]', 'Suspend! [B]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
 
-    // Advance time by enough to timeout both components and commit their placeholders
-    ReactNoop.expire(4000);
-    await advanceTimers(4000);
-
-    expect(ReactNoop.flush()).toEqual([
+    expect(root).toFlushAndYield([
       'Suspend! [A]',
       'Loading A...',
       'Suspend! [B]',
       'Loading B...',
     ]);
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Loading A...'),
-      span('Loading B...'),
-    ]);
+    expect(root).toMatchRenderedOutput(null);
 
-    // Advance time by enough that the first Timeout's promise resolves
-    // and switches back to the normal view. The second Timeout should still show the placeholder
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
+    // Advance time by enough to timeout both components and commit their placeholders
+    jest.advanceTimersByTime(4000);
+    expect(root).toFlushWithoutYielding();
+    expect(root).toMatchRenderedOutput('Loading A...Loading B...');
 
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [A]', 'A']);
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('Loading B...')]);
+    // Advance time by enough that the first Suspense's promise resolves and
+    // switches back to the normal view. The second Suspense should still
+    // show the placeholder
+    jest.advanceTimersByTime(1000);
+    // TODO: Should we throw if you forget to call toHaveYielded?
+    expect(ReactTestRenderer).toHaveYielded(['Promise resolved [A]']);
+    expect(root).toFlushAndYield(['A']);
+    expect(root).toMatchRenderedOutput('ALoading B...');
 
-    // Advance time by enough that the second Timeout's promise resolves
+    // Advance time by enough that the second Suspense's promise resolves
     // and switches back to the normal view
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [B]', 'B']);
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('B')]);
+    jest.advanceTimersByTime(1000);
+    expect(ReactTestRenderer).toHaveYielded(['Promise resolved [B]']);
+    expect(root).toFlushAndYield(['B']);
+    expect(root).toMatchRenderedOutput('AB');
   });
 
-  it('continues rendering siblings after suspending', async () => {
-    ReactNoop.render(
-      <Fallback>
-        <Text text="A" />
-        <AsyncText text="B" />
-        <Text text="C" />
-        <Text text="D" />
-      </Fallback>,
-    );
-    // B suspends. Continue rendering the remaining siblings.
-    expect(ReactNoop.flush()).toEqual(['A', 'Suspend! [B]', 'C', 'D']);
-    // Did not commit yet.
-    expect(ReactNoop.getChildren()).toEqual([]);
+  it('interrupts current render if promise resolves before current render phase', () => {
+    let didResolve = false;
+    let listeners = [];
 
-    // Wait for data to resolve
-    await advanceTimers(100);
-    // Renders successfully
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [B]',
-      'A',
-      'B',
-      'C',
-      'D',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([
-      span('A'),
-      span('B'),
-      span('C'),
-      span('D'),
-    ]);
-  });
-
-  it('retries on error', async () => {
-    class ErrorBoundary extends React.Component {
-      state = { error: null };
-      componentDidCatch(error) {
-        this.setState({ error });
-      }
-      reset() {
-        this.setState({ error: null });
-      }
-      render() {
-        if (this.state.error !== null) {
-          return <Text text={'Caught error: ' + this.state.error.message} />;
+    const thenable = {
+      then(resolve) {
+        if (!didResolve) {
+          listeners.push(resolve);
+        } else {
+          resolve();
         }
-        return this.props.children;
+      },
+    };
+
+    function resolveThenable() {
+      didResolve = true;
+      listeners.forEach(l => l());
+    }
+
+    function Async() {
+      if (!didResolve) {
+        ReactTestRenderer.unstable_yield('Suspend!');
+        throw thenable;
       }
+      ReactTestRenderer.unstable_yield('Async');
+      return 'Async';
     }
 
-    const errorBoundary = React.createRef();
-    function App() {
-      return (
-        <Fallback>
-          <ErrorBoundary ref={errorBoundary}>
-            <AsyncText text="Result" ms={1000} />
-          </ErrorBoundary>
-        </Fallback>
-      );
-    }
-
-    ReactNoop.render(<App />);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Result]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    textResourceShouldFail = true;
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-    textResourceShouldFail = false;
-
-    expect(ReactNoop.flush()).toEqual([
-      'Promise rejected [Result]',
-      'Error! [Result]',
-      'Caught error: Failed to load: Result',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Caught error: Failed to load: Result'),
-    ]);
-
-    // Reset the error boundary and cache, and try again.
-    errorBoundary.current.reset();
-    cache.invalidate();
-
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Result]']);
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Result]', 'Result']);
-    expect(ReactNoop.getChildren()).toEqual([span('Result')]);
-  });
-
-  it('retries on error after falling back to a placeholder', async () => {
-    class ErrorBoundary extends React.Component {
-      state = { error: null };
-      componentDidCatch(error) {
-        this.setState({ error });
-      }
-      reset() {
-        this.setState({ error: null });
-      }
-      render() {
-        if (this.state.error !== null) {
-          return <Text text={'Caught error: ' + this.state.error.message} />;
-        }
-        return this.props.children;
-      }
-    }
-
-    const errorBoundary = React.createRef();
-    function App() {
-      return (
-        <Fallback timeout={1000} placeholder={<Text text="Loading..." />}>
-          <ErrorBoundary ref={errorBoundary}>
-            <AsyncText text="Result" ms={3000} />
-          </ErrorBoundary>
-        </Fallback>
-      );
-    }
-
-    ReactNoop.render(<App />);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Result]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    ReactNoop.expire(2000);
-    await advanceTimers(2000);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Result]', 'Loading...']);
-    expect(ReactNoop.getChildren()).toEqual([span('Loading...')]);
-
-    textResourceShouldFail = true;
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-    textResourceShouldFail = false;
-
-    expect(ReactNoop.flush()).toEqual([
-      'Promise rejected [Result]',
-      'Error! [Result]',
-      'Caught error: Failed to load: Result',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Caught error: Failed to load: Result'),
-    ]);
-
-    // Reset the error boundary and cache, and try again.
-    errorBoundary.current.reset();
-    cache.invalidate();
-
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Result]']);
-    ReactNoop.expire(3000);
-    await advanceTimers(3000);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Result]', 'Result']);
-    expect(ReactNoop.getChildren()).toEqual([span('Result')]);
-  });
-
-  it('can update at a higher priority while in a suspended state', async () => {
-    function App(props) {
-      return (
-        <Fallback>
-          <Text text={props.highPri} />
-          <AsyncText text={props.lowPri} />
-        </Fallback>
-      );
-    }
-
-    // Initial mount
-    ReactNoop.render(<App highPri="A" lowPri="1" />);
-    ReactNoop.flush();
-    await advanceTimers(0);
-    ReactNoop.flush();
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('1')]);
-
-    // Update the low-pri text
-    ReactNoop.render(<App highPri="A" lowPri="2" />);
-    expect(ReactNoop.flush()).toEqual([
-      'A',
-      // Suspends
-      'Suspend! [2]',
-    ]);
-
-    // While we're still waiting for the low-pri update to complete, update the
-    // high-pri text at high priority.
-    ReactNoop.flushSync(() => {
-      ReactNoop.render(<App highPri="B" lowPri="1" />);
-    });
-    expect(ReactNoop.flush()).toEqual(['B', '1']);
-    expect(ReactNoop.getChildren()).toEqual([span('B'), span('1')]);
-
-    // Unblock the low-pri text and finish
-    await advanceTimers(0);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [2]']);
-    expect(ReactNoop.getChildren()).toEqual([span('B'), span('1')]);
-  });
-
-  it('keeps working on lower priority work after being pinged', async () => {
-    function App(props) {
-      return (
-        <Fallback>
-          <AsyncText text="A" />
-          {props.showB && <Text text="B" />}
-        </Fallback>
-      );
-    }
-
-    ReactNoop.render(<App showB={false} />);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [A]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Advance React's virtual time by enough to fall into a new async bucket.
-    ReactNoop.expire(1200);
-    ReactNoop.render(<App showB={true} />);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [A]', 'B']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    await advanceTimers(0);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [A]', 'A', 'B']);
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('B')]);
-  });
-
-  it('tries rendering a lower priority pending update even if a higher priority one suspends', async () => {
-    function App(props) {
-      if (props.hide) {
-        return <Text text="(empty)" />;
-      }
-      return (
-        <Fallback>
-          <AsyncText ms={2000} text="Async" />
-        </Fallback>
-      );
-    }
-
-    // Schedule a high pri update and a low pri update, without rendering in
-    // between.
-    ReactNoop.interactiveUpdates(() => {
-      // High pri
-      ReactNoop.render(<App />);
-    });
-    // Low pri
-    ReactNoop.render(<App hide={true} />);
-
-    expect(ReactNoop.flush()).toEqual([
-      // The first update suspends
-      'Suspend! [Async]',
-      // but we have another pending update that we can work on
-      '(empty)',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('(empty)')]);
-  });
-
-  it('coalesces all async updates when in a suspended state', async () => {
-    ReactNoop.render(
-      <Fallback>
-        <AsyncText text="A" />
-      </Fallback>,
-    );
-    ReactNoop.flush();
-    await advanceTimers(0);
-    ReactNoop.flush();
-    expect(ReactNoop.getChildren()).toEqual([span('A')]);
-
-    ReactNoop.render(
-      <Fallback>
-        <AsyncText text="B" ms={50} />
-      </Fallback>,
-    );
-    expect(ReactNoop.flush()).toEqual(['Suspend! [B]']);
-    expect(ReactNoop.getChildren()).toEqual([span('A')]);
-
-    // Advance React's virtual time so that C falls into a new expiration bucket
-    ReactNoop.expire(1000);
-    ReactNoop.render(
-      <Fallback>
-        <AsyncText text="C" ms={100} />
-      </Fallback>,
-    );
-    expect(ReactNoop.flush()).toEqual([
-      // Tries C first, since it has a later expiration time
-      'Suspend! [C]',
-      // Does not retry B, because its promise has not resolved yet.
-    ]);
-
-    expect(ReactNoop.getChildren()).toEqual([span('A')]);
-
-    // Unblock B
-    await advanceTimers(90);
-    // Even though B's promise resolved, the view is still suspended because it
-    // coalesced with C.
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [B]']);
-    expect(ReactNoop.getChildren()).toEqual([span('A')]);
-
-    // Unblock C
-    await advanceTimers(50);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [C]', 'C']);
-    expect(ReactNoop.getChildren()).toEqual([span('C')]);
-  });
-
-  it('forces an expiration after an update times out', async () => {
-    ReactNoop.render(
-      <Fragment>
-        <Fallback placeholder={<Text text="Loading..." />}>
-          <AsyncText text="Async" ms={20000} />
-        </Fallback>
-        <Text text="Sync" />
-      </Fragment>,
+    const root = ReactTestRenderer.create(
+      <Suspense maxDuration={1000} fallback={<Text text="Loading..." />}>
+        <Async />
+        <Text text="Sibling" />
+      </Suspense>,
+      {
+        unstable_isConcurrent: true,
+      },
     );
 
-    expect(ReactNoop.flush()).toEqual([
-      // The async child suspends
-      'Suspend! [Async]',
-      // Continue on the sibling
-      'Sync',
-    ]);
-    // The update hasn't expired yet, so we commit nothing.
-    expect(ReactNoop.getChildren()).toEqual([]);
+    expect(root).toFlushAndYieldThrough(['Suspend!']);
 
-    // Advance both React's virtual time and Jest's timers by enough to expire
-    // the update, but not by enough to flush the suspending promise.
-    ReactNoop.expire(10000);
-    await advanceTimers(10000);
-    expect(ReactNoop.flushExpired()).toEqual([
-      // Still suspended.
-      'Suspend! [Async]',
-      // Now that the update has expired, we render the fallback UI
-      'Loading...',
-      'Sync',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('Loading...'), span('Sync')]);
+    // The promise resolves before the current render phase has completed
+    resolveThenable();
+    expect(ReactTestRenderer).toHaveYielded([]);
 
-    // Once the promise resolves, we render the suspended view
-    await advanceTimers(10000);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Async]', 'Async']);
-    expect(ReactNoop.getChildren()).toEqual([span('Async'), span('Sync')]);
+    // Start over from the root, instead of continuing.
+    expect(root).toFlushAndYield([
+      // Async renders again *before* Sibling
+      'Async',
+      'Sibling',
+    ]);
+    expect(root).toMatchRenderedOutput('AsyncSibling');
   });
 
-  it('switches to an inner fallback even if it expires later', async () => {
-    ReactNoop.render(
-      <Fragment>
-        <Text text="Sync" />
-        <Fallback timeout={1000} placeholder={<Text text="Loading outer..." />}>
-          <AsyncText text="Outer content" ms={2000} />
-          <Fallback
-            timeout={3000}
-            placeholder={<Text text="Loading inner..." />}
-          >
-            <AsyncText text="Inner content" ms={4000} />
-          </Fallback>
-        </Fallback>
-      </Fragment>,
-    );
-
-    expect(ReactNoop.flush()).toEqual([
-      'Sync',
-      // The async content suspends
-      'Suspend! [Outer content]',
-      'Suspend! [Inner content]',
-    ]);
-    // The update hasn't expired yet, so we commit nothing.
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Expire the outer timeout, but don't expire the inner one.
-    // We should see the outer loading placeholder.
-    ReactNoop.expire(1500);
-    await advanceTimers(1500);
-    expect(ReactNoop.flush()).toEqual([
-      'Sync',
-      // Still suspended.
-      'Suspend! [Outer content]',
-      'Suspend! [Inner content]',
-      // We attempt to fallback to the inner placeholder
-      'Loading inner...',
-      // But the outer content is still suspended, so we need to fallback to
-      // the outer placeholder.
-      'Loading outer...',
-    ]);
-
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Sync'),
-      span('Loading outer...'),
-    ]);
-
-    // Resolve the outer content's promise
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [Outer content]',
-      'Outer content',
-      // Inner content still hasn't loaded
-      'Suspend! [Inner content]',
-      'Loading inner...',
-    ]);
-    // We should now see the inner fallback UI.
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Sync'),
-      span('Outer content'),
-      span('Loading inner...'),
-    ]);
-
-    // Finally, flush the inner promise. We should see the complete screen.
-    ReactNoop.expire(3000);
-    await advanceTimers(3000);
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [Inner content]',
-      'Inner content',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([
-      span('Sync'),
-      span('Outer content'),
-      span('Inner content'),
-    ]);
-  });
-
-  it('renders an expiration boundary synchronously', async () => {
-    // Synchronously render a tree that suspends
-    ReactNoop.flushSync(() =>
-      ReactNoop.render(
-        <Fragment>
-          <Fallback placeholder={<Text text="Loading..." />}>
-            <AsyncText text="Async" />
-          </Fallback>
-          <Text text="Sync" />
-        </Fragment>,
-      ),
-    );
-    expect(ReactNoop.clearYields()).toEqual([
-      // The async child suspends
-      'Suspend! [Async]',
-      // We immediately render the fallback UI
-      'Loading...',
-      // Continue on the sibling
-      'Sync',
-    ]);
-    // The tree commits synchronously
-    expect(ReactNoop.getChildren()).toEqual([span('Loading...'), span('Sync')]);
-
-    // Once the promise resolves, we render the suspended view
-    await advanceTimers(0);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Async]', 'Async']);
-    expect(ReactNoop.getChildren()).toEqual([span('Async'), span('Sync')]);
-  });
-
-  it('suspending inside an expired expiration boundary will bubble to the next one', async () => {
-    ReactNoop.flushSync(() =>
-      ReactNoop.render(
-        <Fragment>
-          <Fallback placeholder={<Text text="Loading (outer)..." />}>
-            <Fallback placeholder={<AsyncText text="Loading (inner)..." />}>
-              <AsyncText text="Async" />
-            </Fallback>
-            <Text text="Sync" />
-          </Fallback>
-        </Fragment>,
-      ),
-    );
-    expect(ReactNoop.clearYields()).toEqual([
-      'Suspend! [Async]',
-      'Suspend! [Loading (inner)...]',
-      'Sync',
-      'Loading (outer)...',
-    ]);
-    // The tree commits synchronously
-    expect(ReactNoop.getChildren()).toEqual([span('Loading (outer)...')]);
-  });
-
-  it('expires early with a `timeout` option', async () => {
-    ReactNoop.render(
-      <Fragment>
-        <Fallback timeout={1000} placeholder={<Text text="Loading..." />}>
-          <AsyncText text="Async" ms={3000} />
-        </Fallback>
-        <Text text="Sync" />
-      </Fragment>,
-    );
-
-    expect(ReactNoop.flush()).toEqual([
-      // The async child suspends
-      'Suspend! [Async]',
-      // Continue on the sibling
-      'Sync',
-    ]);
-    // The update hasn't expired yet, so we commit nothing.
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Advance both React's virtual time and Jest's timers by enough to trigger
-    // the timeout, but not by enough to flush the promise or reach the true
-    // expiration time.
-    ReactNoop.expire(2000);
-    await advanceTimers(2000);
-    expect(ReactNoop.flush()).toEqual([
-      // Still suspended.
-      'Suspend! [Async]',
-      // Now that the expiration view has timed out, we render the fallback UI
-      'Loading...',
-      'Sync',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('Loading...'), span('Sync')]);
-
-    // Once the promise resolves, we render the suspended view
-    await advanceTimers(1000);
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Async]', 'Async']);
-    expect(ReactNoop.getChildren()).toEqual([span('Async'), span('Sync')]);
-  });
-
-  it('throws a helpful error when a synchronous update is suspended', () => {
-    expect(() => {
-      ReactNoop.flushSync(() =>
-        ReactNoop.render(<Timeout>{() => <AsyncText text="Async" />}</Timeout>),
-      );
-    }).toThrow(
-      'A synchronous update was suspended, but no fallback UI was provided.',
-    );
-  });
-
-  it('throws a helpful error when an expired update is suspended', async () => {
-    ReactNoop.render(
-      <Timeout>{() => <AsyncText text="Async" ms={20000} />}</Timeout>,
-    );
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Async]']);
-    await advanceTimers(10000);
-    ReactNoop.expire(10000);
-    expect(() => {
-      expect(ReactNoop.flush()).toEqual(['Suspend! [Async]']);
-    }).toThrow(
-      'An update was suspended for longer than the timeout, but no fallback ' +
-        'UI was provided.',
-    );
-  });
-
-  it('a Timeout component correctly handles more than one suspended child', async () => {
-    ReactNoop.render(
-      <Fallback timeout={0}>
-        <AsyncText text="A" ms={100} />
-        <AsyncText text="B" ms={100} />
-      </Fallback>,
-    );
-    ReactNoop.expire(10000);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [A]', 'Suspend! [B]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    await advanceTimers(100);
-
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [A]',
-      'Promise resolved [B]',
-      'A',
-      'B',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('A'), span('B')]);
-  });
-
-  it('can resume rendering earlier than a timeout', async () => {
-    ReactNoop.render(
-      <Fallback timeout={1000} placeholder={<Text text="Loading..." />}>
-        <AsyncText text="Async" ms={100} />
-      </Fallback>,
-    );
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Async]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Advance time by an amount slightly smaller than what's necessary to
-    // resolve the promise
-    await advanceTimers(99);
-
-    // Nothing has rendered yet
-    expect(ReactNoop.flush()).toEqual([]);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Resolve the promise
-    await advanceTimers(1);
-    // We can now resume rendering
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Async]', 'Async']);
-    expect(ReactNoop.getChildren()).toEqual([span('Async')]);
-  });
-
-  it('starts working on an update even if its priority falls between two suspended levels', async () => {
-    function App(props) {
-      return (
-        <Fallback timeout={10000}>
-          {props.text === 'C' ? (
-            <Text text="C" />
-          ) : (
-            <AsyncText text={props.text} ms={10000} />
-          )}
-        </Fallback>
-      );
-    }
-
-    // Schedule an update
-    ReactNoop.render(<App text="A" />);
-    // The update should suspend.
-    expect(ReactNoop.flush()).toEqual(['Suspend! [A]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Advance time until right before it expires. This number may need to
-    // change if the default expiration for low priority updates is adjusted.
-    await advanceTimers(4999);
-    ReactNoop.expire(4999);
-    expect(ReactNoop.flush()).toEqual([]);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Schedule another low priority update.
-    ReactNoop.render(<App text="B" />);
-    // This update should also suspend.
-    expect(ReactNoop.flush()).toEqual(['Suspend! [B]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    // Schedule a high priority update. Its expiration time will fall between
-    // the expiration times of the previous two updates.
-    ReactNoop.interactiveUpdates(() => {
-      ReactNoop.render(<App text="C" />);
-    });
-    expect(ReactNoop.flush()).toEqual(['C']);
-    expect(ReactNoop.getChildren()).toEqual([span('C')]);
-
-    await advanceTimers(10000);
-    // Flush the remaining work.
-    expect(ReactNoop.flush()).toEqual([
-      'Promise resolved [A]',
-      'Promise resolved [B]',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([span('C')]);
-  });
-
-  it('can hide a tree to unblock its surroundings', async () => {
-    function App() {
-      return (
-        <Timeout ms={1000}>
-          {didTimeout => (
-            <Fragment>
-              <div hidden={didTimeout}>
-                <AsyncText text="Async" ms={3000} />
-              </div>
-              {didTimeout ? <Text text="Loading..." /> : null}
-            </Fragment>
-          )}
-        </Timeout>
-      );
-    }
-
-    ReactNoop.render(<App />);
-    expect(ReactNoop.flush()).toEqual(['Suspend! [Async]']);
-    expect(ReactNoop.getChildren()).toEqual([]);
-
-    ReactNoop.expire(2000);
-    await advanceTimers(2000);
-    expect(ReactNoop.flush()).toEqual([
-      'Suspend! [Async]',
-      'Loading...',
-      'Suspend! [Async]',
-    ]);
-    expect(ReactNoop.getChildren()).toEqual([div(), span('Loading...')]);
-
-    ReactNoop.expire(1000);
-    await advanceTimers(1000);
-
-    expect(ReactNoop.flush()).toEqual(['Promise resolved [Async]', 'Async']);
-    expect(ReactNoop.getChildren()).toEqual([div(span('Async'))]);
-  });
-
-  describe('splitting a high-pri update into high and low', () => {
-    React = require('react');
-
-    class AsyncValue extends React.Component {
-      state = { asyncValue: this.props.defaultValue };
+  it('mounts a lazy class component in non-concurrent mode', async () => {
+    class Class extends React.Component {
       componentDidMount() {
-        ReactNoop.deferredUpdates(() => {
-          this.setState((state, props) => ({ asyncValue: props.value }));
-        });
+        ReactTestRenderer.unstable_yield('Did mount: ' + this.props.label);
       }
       componentDidUpdate() {
-        if (this.props.value !== this.state.asyncValue) {
-          ReactNoop.deferredUpdates(() => {
-            this.setState((state, props) => ({ asyncValue: props.value }));
-          });
-        }
+        ReactTestRenderer.unstable_yield('Did update: ' + this.props.label);
       }
       render() {
-        return this.props.children(this.state.asyncValue);
+        return <Text text={this.props.label} />;
       }
     }
 
-    it('coalesces async values when in a suspended state', async () => {
-      function App(props) {
-        const highPriText = props.text;
+    async function fakeImport(result) {
+      return { default: result };
+    }
+
+    const LazyClass = React.lazy(() => fakeImport(Class));
+
+    const root = ReactTestRenderer.create(
+      <Suspense fallback={<Text text="Loading..." />}>
+        <LazyClass label="Hi" />
+      </Suspense>,
+    );
+
+    expect(ReactTestRenderer).toHaveYielded(['Loading...']);
+    expect(root).toMatchRenderedOutput('Loading...');
+
+    await LazyClass;
+
+    expect(ReactTestRenderer).toHaveYielded(['Hi', 'Did mount: Hi']);
+    expect(root).toMatchRenderedOutput('Hi');
+  });
+
+  it('only captures if `fallback` is defined', () => {
+    const root = ReactTestRenderer.create(
+      <Suspense fallback={<Text text="Loading..." />}>
+        <Suspense maxDuration={100}>
+          <AsyncText text="Hi" ms={5000} />
+        </Suspense>
+      </Suspense>,
+      {
+        unstable_isConcurrent: true,
+      },
+    );
+
+    expect(root).toFlushAndYield([
+      'Suspend! [Hi]',
+      // The outer fallback should be rendered, because the inner one does not
+      // have a `fallback` prop
+      'Loading...',
+    ]);
+    jest.advanceTimersByTime(1000);
+    expect(ReactTestRenderer).toHaveYielded([]);
+    expect(root).toFlushAndYield([]);
+    expect(root).toMatchRenderedOutput('Loading...');
+
+    jest.advanceTimersByTime(5000);
+    expect(ReactTestRenderer).toHaveYielded(['Promise resolved [Hi]']);
+    expect(root).toFlushAndYield(['Hi']);
+    expect(root).toMatchRenderedOutput('Hi');
+  });
+
+  it('throws if tree suspends and none of the Suspense ancestors have a fallback', () => {
+    const root = ReactTestRenderer.create(
+      <Suspense>
+        <AsyncText text="Hi" ms={1000} />
+      </Suspense>,
+      {
+        unstable_isConcurrent: true,
+      },
+    );
+
+    let err;
+    try {
+      root.unstable_flushAll();
+    } catch (e) {
+      err = e;
+    }
+    expect(err.message.replace(/at .+?:\d+/g, 'at **')).toBe(
+      'AsyncText suspended while rendering, but no fallback UI was specified.\n' +
+        '\n' +
+        'Add a <Suspense fallback=...> component higher in the tree to provide ' +
+        'a loading indicator or placeholder to display.\n' +
+        (__DEV__ ? '    in AsyncText (at **)\n' : '    in AsyncText\n') +
+        (__DEV__ ? '    in Suspense (at **)' : '    in Suspense'),
+    );
+    expect(ReactTestRenderer).toHaveYielded(['Suspend! [Hi]', 'Suspend! [Hi]']);
+  });
+
+  describe('outside concurrent mode', () => {
+    it('a mounted class component can suspend without losing state', () => {
+      class TextWithLifecycle extends React.Component {
+        componentDidMount() {
+          ReactTestRenderer.unstable_yield(`Mount [${this.props.text}]`);
+        }
+        componentDidUpdate() {
+          ReactTestRenderer.unstable_yield(`Update [${this.props.text}]`);
+        }
+        componentWillUnmount() {
+          ReactTestRenderer.unstable_yield(`Unmount [${this.props.text}]`);
+        }
+        render() {
+          return <Text {...this.props} />;
+        }
+      }
+
+      let instance;
+      class AsyncTextWithLifecycle extends React.Component {
+        state = { step: 1 };
+        componentDidMount() {
+          ReactTestRenderer.unstable_yield(
+            `Mount [${this.props.text}:${this.state.step}]`,
+          );
+        }
+        componentDidUpdate() {
+          ReactTestRenderer.unstable_yield(
+            `Update [${this.props.text}:${this.state.step}]`,
+          );
+        }
+        componentWillUnmount() {
+          ReactTestRenderer.unstable_yield(
+            `Unmount [${this.props.text}:${this.state.step}]`,
+          );
+        }
+        render() {
+          instance = this;
+          const text = `${this.props.text}:${this.state.step}`;
+          const ms = this.props.ms;
+          try {
+            TextResource.read([text, ms]);
+            ReactTestRenderer.unstable_yield(text);
+            return text;
+          } catch (promise) {
+            if (typeof promise.then === 'function') {
+              ReactTestRenderer.unstable_yield(`Suspend! [${text}]`);
+            } else {
+              ReactTestRenderer.unstable_yield(`Error! [${text}]`);
+            }
+            throw promise;
+          }
+        }
+      }
+
+      function App() {
         return (
-          <Fallback>
-            <AsyncValue value={highPriText} defaultValue={null}>
-              {lowPriText => (
-                <Fragment>
-                  <Text text={`High-pri: ${highPriText}`} />
-                  {lowPriText && (
-                    <AsyncText text={`Low-pri: ${lowPriText}`} ms={100} />
-                  )}
-                </Fragment>
-              )}
-            </AsyncValue>
-          </Fallback>
+          <Suspense
+            maxDuration={1000}
+            fallback={<TextWithLifecycle text="Loading..." />}
+          >
+            <TextWithLifecycle text="A" />
+            <AsyncTextWithLifecycle ms={100} text="B" ref={instance} />
+            <TextWithLifecycle text="C" />
+          </Suspense>
         );
       }
 
-      function renderAppSync(props) {
-        ReactNoop.flushSync(() => ReactNoop.render(<App {...props} />));
+      const root = ReactTestRenderer.create(<App />);
+
+      expect(ReactTestRenderer).toHaveYielded([
+        'A',
+        'Suspend! [B:1]',
+        'C',
+        'Loading...',
+
+        'Mount [A]',
+        // B's lifecycle should not fire because it suspended
+        // 'Mount [B]',
+        'Mount [C]',
+        'Mount [Loading...]',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      jest.advanceTimersByTime(100);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [B:1]',
+        'B:1',
+        'Unmount [Loading...]',
+        // Should be a mount, not an update
+        'Mount [B:1]',
+      ]);
+
+      expect(root).toMatchRenderedOutput('AB:1C');
+
+      instance.setState({ step: 2 });
+      expect(ReactTestRenderer).toHaveYielded([
+        'Suspend! [B:2]',
+        'Loading...',
+        'Mount [Loading...]',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      jest.advanceTimersByTime(100);
+
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [B:2]',
+        'B:2',
+        'Unmount [Loading...]',
+        'Update [B:2]',
+      ]);
+      expect(root).toMatchRenderedOutput('AB:2C');
+    });
+
+    it('bails out on timed-out primary children even if they receive an update', () => {
+      let instance;
+      class Stateful extends React.Component {
+        state = { step: 1 };
+        render() {
+          instance = this;
+          return <Text text={`Stateful: ${this.state.step}`} />;
+        }
       }
 
-      // Initial mount
-      renderAppSync({ text: 'A' });
-      expect(ReactNoop.flush()).toEqual([
-        // First we render at high priority
-        'High-pri: A',
-        // Then we come back later to render a low priority
-        'High-pri: A',
-        // The low-pri view suspends
-        'Suspend! [Low-pri: A]',
-      ]);
-      expect(ReactNoop.getChildren()).toEqual([span('High-pri: A')]);
+      function App(props) {
+        return (
+          <Suspense fallback={<Text text="Loading..." />}>
+            <Stateful />
+            <AsyncText ms={1000} text={props.text} />
+          </Suspense>
+        );
+      }
 
-      // Partially flush the promise for 'A', not by enough to resolve it.
-      await advanceTimers(99);
+      const root = ReactTestRenderer.create(<App text="A" />);
 
-      // Advance React's virtual time so that the next update falls into a new
-      // expiration bucket
-      ReactNoop.expire(2000);
-      // Update to B. At this point, the low-pri view still hasn't updated
-      // to 'A'.
-      renderAppSync({ text: 'B' });
-      expect(ReactNoop.flush()).toEqual([
-        // First we render at high priority
-        'High-pri: B',
-        // Then we come back later to render a low priority
-        'High-pri: B',
-        // The low-pri view suspends
-        'Suspend! [Low-pri: B]',
+      expect(ReactTestRenderer).toHaveYielded([
+        'Stateful: 1',
+        'Suspend! [A]',
+        'Loading...',
       ]);
-      expect(ReactNoop.getChildren()).toEqual([span('High-pri: B')]);
 
-      // Flush the rest of the promise for 'A', without flushing the one
-      // for 'B'.
-      await advanceTimers(1);
-      expect(ReactNoop.flush()).toEqual([
-        // A is unblocked
-        'Promise resolved [Low-pri: A]',
-        // But we don't try to render it, because there's a lower priority
-        // update that is also suspended.
-      ]);
-      expect(ReactNoop.getChildren()).toEqual([span('High-pri: B')]);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded(['Promise resolved [A]', 'A']);
+      expect(root).toMatchRenderedOutput('Stateful: 1A');
 
-      // Flush the remaining work.
-      await advanceTimers(99);
-      expect(ReactNoop.flush()).toEqual([
-        // B is unblocked
-        'Promise resolved [Low-pri: B]',
-        // Now we can continue rendering the async view
-        'High-pri: B',
-        'Low-pri: B',
+      root.update(<App text="B" />);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Stateful: 1',
+        'Suspend! [B]',
+        'Loading...',
       ]);
-      expect(ReactNoop.getChildren()).toEqual([
-        span('High-pri: B'),
-        span('Low-pri: B'),
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      instance.setState({ step: 2 });
+      expect(ReactTestRenderer).toHaveYielded(['Stateful: 2', 'Suspend! [B]']);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [B]',
+        'B',
+        'B',
+      ]);
+      expect(root).toMatchRenderedOutput('Stateful: 2B');
+    });
+
+    it('when updating a timed-out tree, always retries the suspended component', () => {
+      let instance;
+      class Stateful extends React.Component {
+        state = { step: 1 };
+        render() {
+          instance = this;
+          return <Text text={`Stateful: ${this.state.step}`} />;
+        }
+      }
+
+      const Indirection = React.Fragment;
+
+      function App(props) {
+        return (
+          <Suspense fallback={<Text text="Loading..." />}>
+            <Stateful />
+            <Indirection>
+              <Indirection>
+                <Indirection>
+                  <AsyncText ms={1000} text={props.text} />
+                </Indirection>
+              </Indirection>
+            </Indirection>
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App text="A" />);
+
+      expect(ReactTestRenderer).toHaveYielded([
+        'Stateful: 1',
+        'Suspend! [A]',
+        'Loading...',
+      ]);
+
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded(['Promise resolved [A]', 'A']);
+      expect(root).toMatchRenderedOutput('Stateful: 1A');
+
+      root.update(<App text="B" />);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Stateful: 1',
+        'Suspend! [B]',
+        'Loading...',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      instance.setState({ step: 2 });
+      expect(ReactTestRenderer).toHaveYielded([
+        'Stateful: 2',
+
+        // The suspended component should suspend again. If it doesn't, the
+        // likely mistake is that the suspended fiber wasn't marked with
+        // pending work, so it was improperly treated as complete.
+        'Suspend! [B]',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [B]',
+        'B',
+        'B',
+      ]);
+      expect(root).toMatchRenderedOutput('Stateful: 2B');
+    });
+
+    it('suspends in a class that has componentWillUnmount and is then deleted', () => {
+      class AsyncTextWithUnmount extends React.Component {
+        componentWillUnmount() {
+          ReactTestRenderer.unstable_yield('will unmount');
+        }
+        render() {
+          const text = this.props.text;
+          const ms = this.props.ms;
+          try {
+            TextResource.read([text, ms]);
+            ReactTestRenderer.unstable_yield(text);
+            return text;
+          } catch (promise) {
+            if (typeof promise.then === 'function') {
+              ReactTestRenderer.unstable_yield(`Suspend! [${text}]`);
+            } else {
+              ReactTestRenderer.unstable_yield(`Error! [${text}]`);
+            }
+            throw promise;
+          }
+        }
+      }
+
+      function App({ text }) {
+        return (
+          <Suspense fallback={<Text text="Loading..." />}>
+            <AsyncTextWithUnmount text={text} ms={100} />
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App text="A" />);
+      expect(ReactTestRenderer).toHaveYielded(['Suspend! [A]', 'Loading...']);
+      root.update(<Text text="B" />);
+      // Should not fire componentWillUnmount
+      expect(ReactTestRenderer).toHaveYielded(['B']);
+      expect(root).toMatchRenderedOutput('B');
+    });
+
+    it('suspends in a component that also contains useEffect', () => {
+      const { useLayoutEffect } = React;
+
+      function AsyncTextWithEffect(props) {
+        const text = props.text;
+
+        useLayoutEffect(
+          () => {
+            ReactTestRenderer.unstable_yield('Did commit: ' + text);
+          },
+          [text],
+        );
+
+        try {
+          TextResource.read([props.text, props.ms]);
+          ReactTestRenderer.unstable_yield(text);
+          return text;
+        } catch (promise) {
+          if (typeof promise.then === 'function') {
+            ReactTestRenderer.unstable_yield(`Suspend! [${text}]`);
+          } else {
+            ReactTestRenderer.unstable_yield(`Error! [${text}]`);
+          }
+          throw promise;
+        }
+      }
+
+      function App({ text }) {
+        return (
+          <Suspense fallback={<Text text="Loading..." />}>
+            <AsyncTextWithEffect text={text} ms={100} />
+          </Suspense>
+        );
+      }
+
+      ReactTestRenderer.create(<App text="A" />);
+      expect(ReactTestRenderer).toHaveYielded(['Suspend! [A]', 'Loading...']);
+      jest.advanceTimersByTime(500);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [A]',
+        'A',
+        'Did commit: A',
       ]);
     });
-  });
 
-  describe('a Delay component', () => {
-    function Never() {
-      // Throws a promise that resolves after some arbitrarily large
-      // number of seconds. The idea is that this component will never
-      // resolve. It's always wrapped by a Timeout.
-      throw new Promise(resolve => setTimeout(() => resolve(), 10000));
-    }
+    it('retries when an update is scheduled on a timed out tree', () => {
+      let instance;
+      class Stateful extends React.Component {
+        state = { step: 1 };
+        render() {
+          instance = this;
+          return <AsyncText ms={1000} text={`Step: ${this.state.step}`} />;
+        }
+      }
 
-    function Delay({ ms }) {
-      return (
-        <Timeout ms={ms}>
-          {didTimeout => {
-            if (didTimeout) {
-              // Once ms has elapsed, render null. This allows the rest of the
-              // tree to resume rendering.
-              return null;
-            }
-            return <Never />;
-          }}
-        </Timeout>
+      function App(props) {
+        return (
+          <Suspense maxDuration={10} fallback={<Text text="Loading..." />}>
+            <Stateful />
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App />, {
+        unstable_isConcurrent: true,
+      });
+
+      // Initial render
+      expect(root).toFlushAndYield(['Suspend! [Step: 1]', 'Loading...']);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded(['Promise resolved [Step: 1]']);
+      expect(root).toFlushAndYield(['Step: 1']);
+      expect(root).toMatchRenderedOutput('Step: 1');
+
+      // Update that suspends
+      instance.setState({ step: 2 });
+      expect(root).toFlushAndYield(['Suspend! [Step: 2]', 'Loading...']);
+      jest.advanceTimersByTime(500);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      // Update while still suspended
+      instance.setState({ step: 3 });
+      expect(root).toFlushAndYield(['Suspend! [Step: 3]']);
+      expect(root).toMatchRenderedOutput('Loading...');
+
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Step: 2]',
+        'Promise resolved [Step: 3]',
+      ]);
+      expect(root).toFlushAndYield(['Step: 3']);
+      expect(root).toMatchRenderedOutput('Step: 3');
+    });
+
+    it('does not remount the fallback while suspended children resolve in sync mode', () => {
+      let mounts = 0;
+      class ShouldMountOnce extends React.Component {
+        componentDidMount() {
+          mounts++;
+        }
+        render() {
+          return <Text text="Loading..." />;
+        }
+      }
+
+      function App(props) {
+        return (
+          <Suspense maxDuration={10} fallback={<ShouldMountOnce />}>
+            <AsyncText ms={1000} text="Child 1" />
+            <AsyncText ms={2000} text="Child 2" />
+            <AsyncText ms={3000} text="Child 3" />
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App />);
+
+      // Initial render
+      expect(ReactTestRenderer).toHaveYielded([
+        'Suspend! [Child 1]',
+        'Suspend! [Child 2]',
+        'Suspend! [Child 3]',
+        'Loading...',
+      ]);
+      expect(root).toFlushAndYield([]);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Child 1]',
+        'Child 1',
+        'Suspend! [Child 2]',
+        'Suspend! [Child 3]',
+      ]);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Child 2]',
+        'Child 2',
+        'Suspend! [Child 3]',
+        // TODO: This suspends twice because there were two pings, once for each
+        // time Child 2 suspended. This is only an issue in sync mode because
+        // pings aren't batched.
+        'Suspend! [Child 3]',
+      ]);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Child 3]',
+        'Child 3',
+      ]);
+      expect(root).toMatchRenderedOutput(
+        ['Child 1', 'Child 2', 'Child 3'].join(''),
       );
-    }
+      expect(mounts).toBe(1);
+    });
 
-    function DebouncedText({ text, ms }) {
-      return (
-        <Fragment>
-          <Delay ms={ms} />
-          <Text text={text} />
-        </Fragment>
+    it('does not get stuck with fallback in concurrent mode for a large delay', () => {
+      function App(props) {
+        return (
+          <Suspense maxDuration={10} fallback={<Text text="Loading..." />}>
+            <AsyncText ms={1000} text="Child 1" />
+            <AsyncText ms={7000} text="Child 2" />
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App />, {
+        unstable_isConcurrent: true,
+      });
+
+      expect(root).toFlushAndYield([
+        'Suspend! [Child 1]',
+        'Suspend! [Child 2]',
+        'Loading...',
+      ]);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded(['Promise resolved [Child 1]']);
+      expect(root).toFlushAndYield(['Child 1', 'Suspend! [Child 2]']);
+      jest.advanceTimersByTime(6000);
+      expect(ReactTestRenderer).toHaveYielded(['Promise resolved [Child 2]']);
+      expect(root).toFlushAndYield(['Child 1', 'Child 2']);
+      expect(root).toMatchRenderedOutput(['Child 1', 'Child 2'].join(''));
+    });
+
+    it('reuses effects, including deletions, from the suspended tree', () => {
+      const { useState } = React;
+
+      let setTab;
+      function App() {
+        const [tab, _setTab] = useState(0);
+        setTab = _setTab;
+
+        return (
+          <Suspense fallback={<Text text="Loading..." />}>
+            <AsyncText key={tab} text={'Tab: ' + tab} ms={1000} />
+            <Text key={tab + 'sibling'} text=" + sibling" />
+          </Suspense>
+        );
+      }
+
+      const root = ReactTestRenderer.create(<App />);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Suspend! [Tab: 0]',
+        ' + sibling',
+        'Loading...',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Tab: 0]',
+        'Tab: 0',
+      ]);
+      expect(root).toMatchRenderedOutput('Tab: 0 + sibling');
+
+      setTab(1);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Suspend! [Tab: 1]',
+        ' + sibling',
+        'Loading...',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Tab: 1]',
+        'Tab: 1',
+      ]);
+      expect(root).toMatchRenderedOutput('Tab: 1 + sibling');
+
+      setTab(2);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Suspend! [Tab: 2]',
+        ' + sibling',
+        'Loading...',
+      ]);
+      expect(root).toMatchRenderedOutput('Loading...');
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [Tab: 2]',
+        'Tab: 2',
+      ]);
+      expect(root).toMatchRenderedOutput('Tab: 2 + sibling');
+    });
+
+    it('does not warn if an mounted component is pinged', () => {
+      const { useState } = React;
+
+      const root = ReactTestRenderer.create(null);
+
+      let setStep;
+      function UpdatingText({ text, ms }) {
+        const [step, _setStep] = useState(0);
+        setStep = _setStep;
+        const fullText = `${text}:${step}`;
+        try {
+          TextResource.read([fullText, ms]);
+          ReactTestRenderer.unstable_yield(fullText);
+          return fullText;
+        } catch (promise) {
+          if (typeof promise.then === 'function') {
+            ReactTestRenderer.unstable_yield(`Suspend! [${fullText}]`);
+          } else {
+            ReactTestRenderer.unstable_yield(`Error! [${fullText}]`);
+          }
+          throw promise;
+        }
+      }
+
+      root.update(
+        <Suspense fallback={<Text text="Loading..." />}>
+          <UpdatingText text="A" ms={1000} />
+        </Suspense>,
       );
-    }
 
-    it('works', async () => {
-      ReactNoop.render(<DebouncedText text="A" ms={1000} />);
-      ReactNoop.flush();
-      expect(ReactNoop.getChildren()).toEqual([]);
+      expect(ReactTestRenderer).toHaveYielded(['Suspend! [A:0]', 'Loading...']);
+      jest.advanceTimersByTime(1000);
+      expect(ReactTestRenderer).toHaveYielded([
+        'Promise resolved [A:0]',
+        'A:0',
+      ]);
+      expect(root).toMatchRenderedOutput('A:0');
 
-      await advanceTimers(800);
-      ReactNoop.expire(800);
-      ReactNoop.flush();
-      expect(ReactNoop.getChildren()).toEqual([]);
+      setStep(1);
+      expect(ReactTestRenderer).toHaveYielded(['Suspend! [A:1]', 'Loading...']);
+      expect(root).toMatchRenderedOutput('Loading...');
 
-      await advanceTimers(1000);
-      ReactNoop.expire(1000);
-      ReactNoop.flush();
-      expect(ReactNoop.getChildren()).toEqual([span('A')]);
+      root.update(null);
+      expect(root).toFlushWithoutYielding();
+      jest.advanceTimersByTime(1000);
+    });
+
+    it('#14162', () => {
+      const { lazy } = React;
+
+      function Hello() {
+        return <span>hello</span>;
+      }
+
+      async function fetchComponent() {
+        return new Promise(r => {
+          // simulating a delayed import() call
+          setTimeout(r, 1000, { default: Hello });
+        });
+      }
+
+      const LazyHello = lazy(fetchComponent);
+
+      class App extends React.Component {
+        state = { render: false };
+
+        componentDidMount() {
+          setTimeout(() => this.setState({ render: true }));
+        }
+
+        render() {
+          return (
+            <Suspense fallback={<span>loading...</span>}>
+              {this.state.render && <LazyHello />}
+            </Suspense>
+          );
+        }
+      }
+
+      const root = ReactTestRenderer.create(null);
+
+      root.update(<App name="world" />);
+      jest.advanceTimersByTime(1000);
     });
   });
 });

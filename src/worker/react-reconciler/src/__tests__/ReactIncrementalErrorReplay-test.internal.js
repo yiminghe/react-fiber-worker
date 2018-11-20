@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -14,7 +14,7 @@ describe('ReactIncrementalErrorReplay-test', () => {
     // Note: this test is fragile and relies on internals.
     // We almost always try to avoid such tests, but here the cost of
     // the list getting out of sync (and causing subtle bugs in rare cases)
-    // is higher than the cost of maintaing the test.
+    // is higher than the cost of maintaining the test.
     const {
       // Any Fiber factory function will do.
       createHostRootFiber,

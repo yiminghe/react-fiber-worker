@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -24,7 +24,7 @@ describe('ReactIncrementalScheduling', () => {
   });
 
   function span(prop) {
-    return { type: 'span', children: [], prop };
+    return { type: 'span', children: [], prop, hidden: false };
   }
 
   it('schedules and flushes deferred work', () => {
@@ -353,6 +353,7 @@ describe('ReactIncrementalScheduling', () => {
     expect(ReactNoop.flush).toWarnDev(
       'componentWillReceiveProps: Please update the following components ' +
         'to use static getDerivedStateFromProps instead: Foo',
+      { withoutStack: true },
     );
 
     ReactNoop.render(<Foo step={2} />);

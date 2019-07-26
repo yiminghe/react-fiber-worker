@@ -1,11 +1,12 @@
 const webpack = require('webpack');
 
-module.exports = (storybookBaseConfig, configType) => {
-  storybookBaseConfig.plugins.push(
+module.exports = ({ config, mode }) => {
+  config.plugins.push(
     new webpack.DefinePlugin({
-      __DEV__: configType === 'DEVELOPMENT',
+      __DEV__: mode === 'DEVELOPMENT',
       __PROFILE__: true,
     }),
   );
-  return storybookBaseConfig;
+  config.output.globalObject = 'this';
+  return config;
 };

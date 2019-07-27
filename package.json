@@ -1,10 +1,6 @@
 {
   "name": "react-fiber-worker",
   "devDependencies": {
-    "@storybook/addon-actions": "^5.1.9",
-    "@storybook/addon-links": "^5.1.9",
-    "@storybook/addon-options": "^5.1.9",
-    "@storybook/addons": "^5.1.9",
     "@storybook/react": "^5.1.9",
     "@storybook/storybook-deployer": "^2.8.1",
     "babel-loader": "^8.0.6",

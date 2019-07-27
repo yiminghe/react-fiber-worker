@@ -1,9 +1,12 @@
-import { configure } from '@storybook/react';
-import { setOptions } from '@storybook/addon-options';
+import { addParameters, configure } from '@storybook/react';
 
-setOptions({
-  name: 'react-fiber-worker',
-  url: 'https://github.com/yiminghe/react-fiber-worker/'
+addParameters({
+  options: {
+    theme: {
+      brandTitle: 'react-fiber-worker',
+      brandUrl: 'https://github.com/yiminghe/react-fiber-worker/',
+    }
+  }
 });
 
 // automatically import all files ending in *.stories.js
